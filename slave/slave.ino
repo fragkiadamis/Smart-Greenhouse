@@ -1,25 +1,23 @@
-// Include nescessary files
+// Include nescessary libraries and files
 #include <SoftwareSerial.h>
+#include <Servo.h>
 #include <avr/sleep.h>
+#include "DHT.h"
 #include "slave.h"
 
-// Setup software serial pins
+// Initialize software serial pins
 SoftwareSerial BTSerial(BT_RX, BT_TX);
-
-void startSerials(void) {
-  // Setup hardware serial & bluetooth serial
-  Serial.begin(BAUD_RATE);
-  while(!Serial);
-  BTSerial.begin(BT_BAUD_RATE);
-  while(!BTSerial);
-}
+// Initialize DHT sensor
+DHT dht(DHT_PIN, DHT_TYPE);
+// Initialize Servo
+Servo irrigationValve;
 
 // Arduino falls into deep sleep
-void deepSleep(void) {
-  sleep_enable();//Enabling sleep mode
+void mcuSleep(void) {
+  sleep_enable(); // Enabling sleep mode
   attachInterrupt(digitalPinToInterrupt(INTERRUPT_PIN), wakeUp, CHANGE);
-  set_sleep_mode(SLEEP_MODE_PWR_DOWN);//Setting the sleep mode, in our case full sleep
-  sleep_cpu();//activating sleep mode
+  set_sleep_mode(SLEEP_MODE_ADC); // Setting the sleep mode.
+  sleep_cpu(); // Activating sleep mode
 }
 
 // Read the data from a given serial
@@ -43,59 +41,119 @@ void readSerialData(char *buffer) {
 }
 
 // Toggle buzzer (turn ON or OFF)
-void toggleBuzzer(uint8_t pin, bool buzz) {
-  if (buzz)
-    return tone(pin, BUZZER_FREQ);
+void toggleBuzzer(bool turnOn) {
+  if (turnOn)
+    return tone(BUZZER_PIN, BUZZER_FREQ);
 
-  noTone(pin);
+  noTone(BUZZER_PIN);
 }
 
-// Write to pins
-void writeToPin(char pinQuality, char pin, uint8_t value) {
-  // Analog pin
-  if (pinQuality == 'A')
-    analogWrite(pin, map(value, 0, 255, 0, 1024));
-  
-  // Digital pin
-  else if (pinQuality == 'D') {
-    if (pin == BUZZER_PIN) // If it's the buzzer then buzzzz
-      return toggleBuzzer(pin, value);
+// Read DHT sensor humidity
+float readDHTSensor(uint8_t sensor) {
+  float val = 0;
 
-    // Else change pin state
-    digitalWrite(pin, value = (value) ? HIGH : LOW); // In digital we only care for 0 and 1
+  switch (sensor) {
+    case HUMIDITY: val = dht.readHumidity(); break;
+    case INNER_TEMP: val = dht.readTemperature(); break;
   }
+  
+  if (isnan(val))
+    return -1;
+
+  return val;
+}
+
+// Toggle Irrigation (turn ON or OFF)
+void toggleIrrigation(uint8_t turnOn) {
+  if (turnOn)
+    return irrigationValve.write(180);
+  
+  irrigationValve.write(0);
+}
+
+// Read the outside temperature from LM35 sensor
+float readLM35Sensor(void) {
+  uint16_t reading = analogRead(LM35_PIN);
+  float voltage = reading * (1100 / 1024.0);
+  float temperature = voltage / 10;
+  return temperature;
+}
+
+// Take the percentage of inner luminosity to the outter
+float luminocityPercentage(uint8_t sensor) {
+  uint16_t inner = analogRead(INNER_LDR_PIN);
+  uint16_t outter = analogRead(OUTTER_LDR_PIN);
+
+  return ((float)inner / (float)outter) * 100.0;
 }
 
 // Extract the command from the string and execute it
-void executeCommand(char *buffer) {
-  // Extract command (READ or WRITE | DIGITAL or ANALOG | PIN | VALUE)
-  char action = (String(buffer).substring(0, 1)).charAt(0);
-  char pinQuality = (String(buffer).substring(1, 2)).charAt(0);
-  uint8_t pin = (String(buffer).substring(2, 4)).toInt();
-  uint8_t value = (String(buffer).substring(5)).toInt();
+void executeCommand(String cmd) {
+  uint8_t splitIndex = cmd.indexOf('|');
+  uint8_t action = (cmd.substring(0, splitIndex)).toInt();
+  uint8_t value = 0;
+  if (splitIndex)
+    value = (cmd.substring(splitIndex + 1, cmd.length())).toInt();
 
-
-  // Execute command
-  if (action == 'W')
-    writeToPin(pinQuality, pin, value);
-  // else if (action == 'R')
-  //   return readFromPin(pinQuality, pin);
+  if (action == BZ)
+    return toggleBuzzer(value);
+  else if (action == DHT_SENS) {
+    float sensorValue = readDHTSensor(value);
+    BTSerial.println(sensorValue);
+  } else if (action == IRG)
+    return toggleIrrigation(value);
+  else if (action == OUTER_TEMP) {
+    float temperature = readLM35Sensor();
+    BTSerial.println(temperature);
+  } else if (action == LUM) {
+    float luminosity = luminocityPercentage(value);
+    BTSerial.println(luminosity);
+  } else {
+    Serial.println(F("Undefined command"));
+  }
 }
 
 void setup() {
-  startSerials();
+  // Setup hardware serial
+  Serial.begin(BAUD_RATE);
+  while(!Serial);
+  Serial.flush();
+
+  // Setup Outputs
+  pinMode(BUZZER_PIN, OUTPUT);
+  pinMode(VALVE_PIN, OUTPUT);
+
+  // Setup inputs
+  pinMode(DHT_PIN, INPUT);
+  pinMode(LM35_PIN, INPUT);
+  pinMode(INNER_LDR_PIN, INPUT);
+  pinMode(OUTTER_LDR_PIN, INPUT);
+
+  // Setup bluetooth serial
+  BTSerial.begin(BT_BAUD_RATE);
+  while(!BTSerial);
+  BTSerial.flush();
+
+  // Setup DHT sensor
+  dht.begin();
+
+  // Setup Irrigation valve servo motor
+  irrigationValve.attach(VALVE_PIN);
+  irrigationValve.write(0);
+
+  // Set the reference voltage for analog input to the built-in 1.1
+  analogReference(INTERNAL);
 }
 
 void loop() {
   // Fall into deep sleep
-  // deepSleep();
-  // delay(200);
+  // mcuSleep();
 
   // If BTSerial has available data
   if (BTSerial.available()) {
     char cmd[SERIAL_BUFFER_SIZE] = {0};
     readSerialData(cmd);
-    executeCommand(cmd);
+    executeCommand(String(cmd));
   }
 }
 
@@ -103,5 +161,4 @@ void loop() {
 void wakeUp(void) {
   sleep_disable();
   detachInterrupt(digitalPinToInterrupt(INTERRUPT_PIN));
-  startSerials();
 }
