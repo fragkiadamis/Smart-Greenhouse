@@ -1,12 +1,12 @@
 // Include nescessary libraries and files
-#include <SoftwareSerial.h>
-#include <Servo.h>
 #include <avr/sleep.h>
+#include <bluetooth_com.h>
+#include <Servo.h>
 #include "DHT.h"
 #include "slave.h"
 
-// Initialize software serial pins
-SoftwareSerial BTSerial(BT_RX, BT_TX);
+// Initialize Bluetooth
+BluetoothCom bt;
 // Initialize DHT sensor
 DHT dht(DHT_PIN, DHT_TYPE);
 // Initialize Servo
@@ -18,26 +18,6 @@ void mcuSleep(void) {
   attachInterrupt(digitalPinToInterrupt(INTERRUPT_PIN), wakeUp, CHANGE);
   set_sleep_mode(SLEEP_MODE_ADC); // Setting the sleep mode.
   sleep_cpu(); // Activating sleep mode
-}
-
-// Read the data from a given serial
-void readSerialData(char *buffer) {
-  uint8_t size = 0;
-  unsigned long time = micros();
-
-  while(micros() - time <= SERIAL_TIMEOUT) {
-    if (BTSerial.available()) {
-      char c = BTSerial.read();
-      
-      // If the buffer is almost full or end of line, stop
-      if(size == (SERIAL_BUFFER_SIZE - 1) || c == '\n')
-        break;
-        
-      buffer[size++] = c;
-      time = micros(); // Every time a new character arrives update the timeout
-    }
-  }
-  buffer[size] = '\0';
 }
 
 // Toggle buzzer (turn ON or OFF)
@@ -99,15 +79,15 @@ void executeCommand(String cmd) {
     return toggleBuzzer(value);
   else if (action == DHT_SENS) {
     float sensorValue = readDHTSensor(value);
-    BTSerial.println(sensorValue);
+    bt.send(sensorValue);
   } else if (action == IRG)
     return toggleIrrigation(value);
   else if (action == OUTER_TEMP) {
     float temperature = readLM35Sensor();
-    BTSerial.println(temperature);
+    bt.send(temperature);
   } else if (action == LUM) {
-    float luminosity = luminocityPercentage(value);
-    BTSerial.println(luminosity);
+    float luminosityPerc = luminocityPercentage(value);
+    bt.send(luminosityPerc);
   } else {
     Serial.println(F("Undefined command"));
   }
@@ -129,11 +109,8 @@ void setup() {
   pinMode(INNER_LDR_PIN, INPUT);
   pinMode(OUTTER_LDR_PIN, INPUT);
 
-  // Setup bluetooth serial
-  BTSerial.begin(BT_BAUD_RATE);
-  while(!BTSerial);
-  BTSerial.flush();
-
+  // Setup Bluetooth
+  bt.begin();
   // Setup DHT sensor
   dht.begin();
 
@@ -149,10 +126,10 @@ void loop() {
   // Fall into deep sleep
   // mcuSleep();
 
-  // If BTSerial has available data
-  if (BTSerial.available()) {
+  // If bluetooth buffer has a message
+  if (bt.hasMessage()) {
     char cmd[SERIAL_BUFFER_SIZE] = {0};
-    readSerialData(cmd);
+    bt.receive(cmd);
     executeCommand(String(cmd));
   }
 }

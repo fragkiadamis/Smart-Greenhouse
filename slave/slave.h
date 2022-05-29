@@ -1,10 +1,5 @@
 // Serials
 #define BAUD_RATE 57600
-#define BT_BAUD_RATE 38400
-#define SERIAL_BUFFER_SIZE 16
-#define SERIAL_TIMEOUT 10000
-#define BT_RX 10
-#define BT_TX 11
 
 // Actuators
 #define BUZZER_PIN 3
