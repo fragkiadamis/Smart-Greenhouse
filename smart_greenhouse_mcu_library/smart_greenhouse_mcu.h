@@ -1,6 +1,6 @@
 // BluetoothCom.h
-#ifndef BLUETOOTH_COM_H
-#define BLUETOOTH_COM_H
+#ifndef SMART_GREENHOUSE_MCU_H
+#define SMART_GREENHOUSE_MCU_H
 
 #define SERIAL_BUFFER_SIZE 16
 #define SERIAL_TIMEOUT 10000
@@ -10,13 +10,14 @@
 
 #include "Arduino.h"
 
-class BluetoothCom {
+class SmartGreenHouseMCU {
     private:
     public:
-        void begin();
+        void begin(void);
         bool hasMessage(void);
         void receive(char *buffer);
         void send(float value);
+        void mcu_sleep(void);
 };
 
 #endif

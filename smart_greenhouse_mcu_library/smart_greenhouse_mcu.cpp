@@ -1,19 +1,20 @@
 #include <SoftwareSerial.h>
-#include "bluetooth_com.h"
+#include <avr/sleep.h>
+#include "smart_greenhouse_mcu.h"
 
 SoftwareSerial BTSerial(BT_RX, BT_TX);
 
-void BluetoothCom::begin() {
+void SmartGreenHouseMCU::begin(void) {
     BTSerial.begin(BT_BAUD_RATE);
     while(!BTSerial);
     BTSerial.flush();
 }
 
-bool BluetoothCom::hasMessage(void) {
+bool SmartGreenHouseMCU::hasMessage(void) {
     return BTSerial.available();
 }
     
-void BluetoothCom::receive(char *buffer) {
+void SmartGreenHouseMCU::receive(char *buffer) {
     uint8_t size = 0;
     unsigned long time = micros();
 
@@ -32,6 +33,13 @@ void BluetoothCom::receive(char *buffer) {
     buffer[size] = '\0';
 }
 
-void BluetoothCom::send(float value) {
+void SmartGreenHouseMCU::send(float value) {
     BTSerial.println(value);
+}
+
+void SmartGreenHouseMCU::mcu_sleep(void) {
+    sleep_enable(); // Enabling sleep mode
+    set_sleep_mode(SLEEP_MODE_ADC); // Setting the sleep mode.
+    sleep_cpu(); // Activating sleep mode
+    sleep_disable();
 }

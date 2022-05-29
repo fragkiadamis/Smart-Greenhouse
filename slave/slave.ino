@@ -1,24 +1,15 @@
 // Include nescessary libraries and files
-#include <avr/sleep.h>
-#include <bluetooth_com.h>
+#include <smart_greenhouse_mcu.h>
 #include <Servo.h>
 #include "DHT.h"
 #include "slave.h"
 
 // Initialize Bluetooth
-BluetoothCom bt;
+SmartGreenHouseMCU sghMCU;
 // Initialize DHT sensor
 DHT dht(DHT_PIN, DHT_TYPE);
 // Initialize Servo
 Servo irrigationValve;
-
-// Arduino falls into deep sleep
-void mcuSleep(void) {
-  sleep_enable(); // Enabling sleep mode
-  attachInterrupt(digitalPinToInterrupt(INTERRUPT_PIN), wakeUp, CHANGE);
-  set_sleep_mode(SLEEP_MODE_ADC); // Setting the sleep mode.
-  sleep_cpu(); // Activating sleep mode
-}
 
 // Toggle buzzer (turn ON or OFF)
 void toggleBuzzer(bool turnOn) {
@@ -79,15 +70,15 @@ void executeCommand(String cmd) {
     return toggleBuzzer(value);
   else if (action == DHT_SENS) {
     float sensorValue = readDHTSensor(value);
-    bt.send(sensorValue);
+    sghMCU.send(sensorValue);
   } else if (action == IRG)
     return toggleIrrigation(value);
   else if (action == OUTER_TEMP) {
     float temperature = readLM35Sensor();
-    bt.send(temperature);
+    sghMCU.send(temperature);
   } else if (action == LUM) {
     float luminosityPerc = luminocityPercentage(value);
-    bt.send(luminosityPerc);
+    sghMCU.send(luminosityPerc);
   } else {
     Serial.println(F("Undefined command"));
   }
@@ -110,7 +101,7 @@ void setup() {
   pinMode(OUTTER_LDR_PIN, INPUT);
 
   // Setup Bluetooth
-  bt.begin();
+  sghMCU.begin();
   // Setup DHT sensor
   dht.begin();
 
@@ -123,19 +114,19 @@ void setup() {
 }
 
 void loop() {
-  // Fall into deep sleep
-  // mcuSleep();
+  // Fall into sleep
+  // attachInterrupt(digitalPinToInterrupt(INTERRUPT_PIN), wakeUp, CHANGE);
+  // sghMCU.mcu_sleep();
+  // detachInterrupt(digitalPinToInterrupt(INTERRUPT_PIN));
 
   // If bluetooth buffer has a message
-  if (bt.hasMessage()) {
+  if (sghMCU.hasMessage()) {
     char cmd[SERIAL_BUFFER_SIZE] = {0};
-    bt.receive(cmd);
+    sghMCU.receive(cmd);
     executeCommand(String(cmd));
   }
 }
 
 // Interrupt from sleep
 void wakeUp(void) {
-  sleep_disable();
-  detachInterrupt(digitalPinToInterrupt(INTERRUPT_PIN));
 }
