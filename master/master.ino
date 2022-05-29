@@ -1,4 +1,4 @@
-#include <bluetooth_com.h>
+#include <smart_greenhouse_mcu.h>
 #include "master.h"
 
 void setup() {

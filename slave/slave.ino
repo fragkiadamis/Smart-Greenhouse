@@ -1,7 +1,4 @@
-// Include nescessary libraries and files
-#include <smart_greenhouse_mcu.h>
-#include <Servo.h>
-#include "DHT.h"
+// Include nescessary header
 #include "slave.h"
 
 // Initialize Bluetooth

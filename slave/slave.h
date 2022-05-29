@@ -1,3 +1,8 @@
+// Include libraries
+#include <smart_greenhouse_mcu.h>
+#include <Servo.h>
+#include "DHT.h"
+
 // Serials
 #define BAUD_RATE 57600
 

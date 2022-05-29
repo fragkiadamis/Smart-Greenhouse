@@ -1,4 +1,9 @@
 // BluetoothCom.h
+
+#include "Arduino.h"
+#include <SoftwareSerial.h>
+#include <avr/sleep.h>
+
 #ifndef SMART_GREENHOUSE_MCU_H
 #define SMART_GREENHOUSE_MCU_H
 
@@ -7,8 +12,6 @@
 #define BT_BAUD_RATE 38400
 #define BT_RX 10
 #define BT_TX 11
-
-#include "Arduino.h"
 
 class SmartGreenHouseMCU {
     private:

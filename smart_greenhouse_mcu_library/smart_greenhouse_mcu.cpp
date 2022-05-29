@@ -1,5 +1,3 @@
-#include <SoftwareSerial.h>
-#include <avr/sleep.h>
 #include "smart_greenhouse_mcu.h"
 
 SoftwareSerial BTSerial(BT_RX, BT_TX);
