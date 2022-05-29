@@ -1,0 +1,1 @@
+Add this directory under ~/Arduino/libraries for linux, or My Documents/Arduino/libraries for windows
