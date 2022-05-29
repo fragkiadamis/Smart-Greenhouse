@@ -24,8 +24,8 @@ float readDHTSensor(uint8_t sensor) {
   float val = 0;
 
   switch (sensor) {
-    case HUMIDITY: val = dht.readHumidity(); break;
-    case INNER_TEMP: val = dht.readTemperature(); break;
+    case sghMCU.HUMIDITY: val = dht.readHumidity(); break;
+    case sghMCU.INNER_TEMP: val = dht.readTemperature(); break;
   }
   
   if (isnan(val))
@@ -66,17 +66,17 @@ void executeCommand(String cmd) {
   if (splitIndex)
     value = (cmd.substring(splitIndex + 1, cmd.length())).toInt();
 
-  if (action == BZ)
+  if (action == sghMCU.BZ)
     return toggleBuzzer(value);
-  else if (action == DHT_SENS) {
+  else if (action == sghMCU.DHT_SENS) {
     float sensorValue = readDHTSensor(value);
     sghMCU.send(sensorValue);
-  } else if (action == IRG)
+  } else if (action == sghMCU.IRG)
     return toggleIrrigation(value);
-  else if (action == OUTER_TEMP) {
+  else if (action == sghMCU.OUTER_TEMP) {
     float temperature = readLM35Sensor();
     sghMCU.send(temperature);
-  } else if (action == LUM) {
+  } else if (action == sghMCU.LUM) {
     float luminosityPerc = luminocityPercentage(value);
     sghMCU.send(luminosityPerc);
   } else {

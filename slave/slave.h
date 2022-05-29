@@ -15,18 +15,3 @@
 
 // Interrupt
 #define INTERRUPT_PIN 2
-
-// DHT sensors enumeration
-typedef enum {
-    HUMIDITY,
-    INNER_TEMP
-} DHT_SENSOR;
-
-// Action enumeration
-typedef enum {
-    BZ,         // Buzzer
-    DHT_SENS,   // DHT Humidity
-    IRG,        // Irrigation
-    OUTER_TEMP, // Outer temperature
-    LUM         // Inner lumination
-} ACTION;
