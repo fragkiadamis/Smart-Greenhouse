@@ -1,14 +1,15 @@
 // BluetoothCom.h
 
 #include "Arduino.h"
-#include <SoftwareSerial.h>
-#include <avr/sleep.h>
+// #include <avr/sleep.h>
 
 #ifndef SMART_GREENHOUSE_MCU_H
 #define SMART_GREENHOUSE_MCU_H
 
+// Serials
 #define SERIAL_BUFFER_SIZE 16
 #define SERIAL_TIMEOUT 10000
+#define BAUD_RATE 115200
 #define BT_BAUD_RATE 38400
 #define BT_RX 10
 #define BT_TX 11
@@ -16,13 +17,13 @@
 class SmartGreenHouseMCU {
     private:
     public:
-        // DHT sensors enumeration
+        // DHT sensors enumeration - Communication Protocol
         typedef enum {
             HUMIDITY,
             INNER_TEMP
         } DHT_SENSOR;
 
-        // Action enumeration
+        // Action enumeration - Communication Protocol
         typedef enum {
             BZ,         // Buzzer
             DHT_SENS,   // DHT Humidity
@@ -32,7 +33,8 @@ class SmartGreenHouseMCU {
         } ACTION;
 
         // Methods
-        void begin(void);
+        void setupHardwareSerial(void);
+        void setupBTSerial(void);
         bool hasMessage(void);
         void receive(char *buffer);
         void send(float value);

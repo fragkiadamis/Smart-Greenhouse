@@ -1,13 +1,30 @@
-#include <smart_greenhouse_mcu.h>
 #include "master.h"
 
+// Initialize Bluetooth
+SmartGreenHouseMCU sghMCU;
+
 void setup() {
-  // Setup hardware serial
-  Serial.begin(BAUD_RATE);
-  while(!Serial);
-  Serial.flush();
+    // Setup hardware and bluetooth serial
+    sghMCU.setupHardwareSerial();
+    sghMCU.setupBTSerial();
+    Serial.println("Master MCU is ready!");
 }
 
 void loop() {
+    Serial.println("Master MCU is ready!");
+    delay(2000);
+    // uint16_t reading1 = touchRead(T0);
+    // uint16_t reading2 = touchRead(T3);
+    
+    // String onn = "0|1";
+    // String off = "0|0";
+    
+    // if (Serial2.available()) 
+    //     Serial.write(Serial2.read()); 
 
+    // Serial2.println(onn);
+    // delay(1000);
+    // Serial2.println(off);
+    // delay(1000);
+    // Serial.println("TEST");
 }

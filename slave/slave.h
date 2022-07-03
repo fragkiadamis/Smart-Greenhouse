@@ -3,9 +3,6 @@
 #include <Servo.h>
 #include "DHT.h"
 
-// Serials
-#define BAUD_RATE 57600
-
 // Actuators
 #define BUZZER_PIN 3
 #define BUZZER_FREQ 1000

@@ -60,6 +60,7 @@ void executeCommand(String cmd) {
   uint8_t splitIndex = cmd.indexOf('|');
   uint8_t action = (cmd.substring(0, splitIndex)).toInt();
   uint8_t value = 0;
+
   if (splitIndex)
     value = (cmd.substring(splitIndex + 1, cmd.length())).toInt();
 
@@ -82,10 +83,9 @@ void executeCommand(String cmd) {
 }
 
 void setup() {
-  // Setup hardware serial
-  Serial.begin(BAUD_RATE);
-  while(!Serial);
-  Serial.flush();
+  // Setup hardware and bluetooth serial
+  sghMCU.setupHardwareSerial();
+  sghMCU.setupBTSerial();
 
   // Setup Outputs
   pinMode(BUZZER_PIN, OUTPUT);
@@ -97,8 +97,6 @@ void setup() {
   pinMode(INNER_LDR_PIN, INPUT);
   pinMode(OUTTER_LDR_PIN, INPUT);
 
-  // Setup Bluetooth
-  sghMCU.begin();
   // Setup DHT sensor
   dht.begin();
 
@@ -108,6 +106,7 @@ void setup() {
 
   // Set the reference voltage for analog input to the built-in 1.1
   analogReference(INTERNAL);
+  Serial.println("Slave MCU is ready!");
 }
 
 void loop() {
@@ -120,6 +119,7 @@ void loop() {
   if (sghMCU.hasMessage()) {
     char cmd[SERIAL_BUFFER_SIZE] = {0};
     sghMCU.receive(cmd);
+    Serial.print(cmd);
     executeCommand(String(cmd));
   }
 }
