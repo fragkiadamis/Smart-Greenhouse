@@ -11,18 +11,17 @@ void setup() {
 }
 
 void loop() {
-    // uint16_t reading1 = touchRead(T0);
-    // uint16_t reading2 = touchRead(T3);
+    uint16_t reading1 = touchRead(T0);
+    uint16_t reading2 = touchRead(T3);
     
-    // String onn = "0|1";
-    // String off = "0|0";
-    
-    // if (Serial2.available())
-    //     Serial.write(Serial2.read());
+    if (sghMCU.hasMessage()) {
+        char msg[SERIAL_BUFFER_SIZE] = {0};
+        sghMCU.receive(msg);
+        Serial.print(msg);
+    }
 
-    // Serial2.println(onn);
-    // delay(1000);
-    // Serial2.println(off);
-    // delay(1000);
-    // Serial.println("TEST");
+    sghMCU.send("0|1");
+    delay(1000);
+    sghMCU.send("0|0");
+    delay(1000);
 }

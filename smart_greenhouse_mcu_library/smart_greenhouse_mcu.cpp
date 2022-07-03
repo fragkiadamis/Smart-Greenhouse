@@ -53,6 +53,6 @@ void SmartGreenHouseMCU::receive(char *buffer) {
     buffer[size] = '\0';
 }
 
-void SmartGreenHouseMCU::send(float value) {
-    BTSerial.println(value);
+void SmartGreenHouseMCU::send(String msg) {
+    BTSerial.println(msg);
 }

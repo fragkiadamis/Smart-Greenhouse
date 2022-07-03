@@ -37,7 +37,7 @@ class SmartGreenHouseMCU {
         void setupBTSerial(void);
         bool hasMessage(void);
         void receive(char *buffer);
-        void send(float value);
+        void send(String msg);
 };
 
 #endif

@@ -75,15 +75,15 @@ void executeCommand(String cmd) {
     return toggleBuzzer(value);
   else if (action == sghMCU.DHT_SENS) {
     float sensorValue = readDHTSensor(value);
-    sghMCU.send(sensorValue);
+    sghMCU.send(String(sensorValue));
   } else if (action == sghMCU.IRG)
     return toggleIrrigation(value);
   else if (action == sghMCU.OUTER_TEMP) {
     float temperature = readLM35Sensor();
-    sghMCU.send(temperature);
+    sghMCU.send(String(temperature));
   } else if (action == sghMCU.LUM) {
     float luminosityPerc = luminocityPercentage(value);
-    sghMCU.send(luminosityPerc);
+    sghMCU.send(String(luminosityPerc));
   } else {
     Serial.println(F("Undefined command"));
   }
