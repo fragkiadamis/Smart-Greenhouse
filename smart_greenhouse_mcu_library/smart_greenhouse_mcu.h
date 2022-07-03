@@ -9,8 +9,10 @@
 #define SERIAL_TIMEOUT 10000
 #define BAUD_RATE 115200
 #define BT_BAUD_RATE 38400
-#define BT_RX 10
-#define BT_TX 11
+#define SLAVE_BT_RX 10
+#define SLAVE_BT_TX 11
+#define MASTER_BT_RX 16
+#define MASTER_BT_TX 17
 
 class SmartGreenHouseMCU {
     private:

@@ -9,7 +9,7 @@
     #define BTSerial Serial2 // Set BTSerial as Serial2 alias
 #elif defined(__AVR_ATmega328P__)
     #include <SoftwareSerial.h>
-    SoftwareSerial BTSerial(BT_RX, BT_TX); // Set software serial as BTSerial
+    SoftwareSerial BTSerial(SLAVE_BT_RX, SLAVE_BT_TX); // Set software serial as BTSerial
 #endif
 
 void SmartGreenHouseMCU::setupHardwareSerial(void) {
@@ -22,7 +22,7 @@ void SmartGreenHouseMCU::setupHardwareSerial(void) {
 void SmartGreenHouseMCU::setupBTSerial(void) {
     // Setup bluetooth serial, according to MCU type
     #if defined(ESP_PLATFORM)
-        BTSerial.begin(38400, SERIAL_8N1, 16, 17);
+        BTSerial.begin(BT_BAUD_RATE, SERIAL_8N1, MASTER_BT_RX, MASTER_BT_TX);
     #elif defined(__AVR_ATmega328P__)
         BTSerial.begin(BT_BAUD_RATE);
     #endif
