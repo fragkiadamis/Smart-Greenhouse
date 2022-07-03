@@ -1,7 +1,5 @@
 // BluetoothCom.h
-
 #include "Arduino.h"
-// #include <avr/sleep.h>
 
 #ifndef SMART_GREENHOUSE_MCU_H
 #define SMART_GREENHOUSE_MCU_H
@@ -38,7 +36,6 @@ class SmartGreenHouseMCU {
         bool hasMessage(void);
         void receive(char *buffer);
         void send(float value);
-        void mcu_sleep(void);
 };
 
 #endif

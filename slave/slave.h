@@ -1,5 +1,6 @@
 // Include libraries
 #include <smart_greenhouse_mcu.h>
+#include <avr/sleep.h>
 #include <Servo.h>
 #include "DHT.h"
 

@@ -1,6 +1,6 @@
 #include "master.h"
 
-// Initialize Bluetooth
+// Initialize communication protocol and serial handling
 SmartGreenHouseMCU sghMCU;
 
 void setup() {
@@ -11,16 +11,14 @@ void setup() {
 }
 
 void loop() {
-    Serial.println("Master MCU is ready!");
-    delay(2000);
     // uint16_t reading1 = touchRead(T0);
     // uint16_t reading2 = touchRead(T3);
     
     // String onn = "0|1";
     // String off = "0|0";
     
-    // if (Serial2.available()) 
-    //     Serial.write(Serial2.read()); 
+    // if (Serial2.available())
+    //     Serial.write(Serial2.read());
 
     // Serial2.println(onn);
     // delay(1000);

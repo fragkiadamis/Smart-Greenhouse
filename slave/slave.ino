@@ -1,12 +1,19 @@
 // Include nescessary header
 #include "slave.h"
 
-// Initialize Bluetooth
+// Initialize communication protocol and serial handling
 SmartGreenHouseMCU sghMCU;
 // Initialize DHT sensor
 DHT dht(DHT_PIN, DHT_TYPE);
 // Initialize Servo
 Servo irrigationValve;
+
+void mcu_sleep(void) {
+    sleep_enable(); // Enabling sleep mode
+    set_sleep_mode(SLEEP_MODE_ADC); // Setting the sleep mode.
+    sleep_cpu(); // Activating sleep mode
+    sleep_disable();
+}
 
 // Toggle buzzer (turn ON or OFF)
 void toggleBuzzer(bool turnOn) {
@@ -112,7 +119,7 @@ void setup() {
 void loop() {
   // Fall into sleep
   // attachInterrupt(digitalPinToInterrupt(INTERRUPT_PIN), wakeUp, CHANGE);
-  // sghMCU.mcu_sleep();
+  // mcu_sleep();
   // detachInterrupt(digitalPinToInterrupt(INTERRUPT_PIN));
 
   // If bluetooth buffer has a message
