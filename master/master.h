@@ -1,12 +1,9 @@
 // Include libraries
 #include <smart_greenhouse_mcu.h>
 
-// Serials
-#define BAUD_RATE 115200
-#define BTSerial Serial2
-
-// Bluetooth
-#define SLAVE_ADDR 98d3:32:3165fe
+// Sleep
+#define uS_TO_S_FACTOR 1000000  // Conversion factor for micro seconds to seconds
+#define TIME_TO_SLEEP  5        // Time ESP32 will go to sleep (in seconds)
 
 // Shutter
 #define UPPER_END T0

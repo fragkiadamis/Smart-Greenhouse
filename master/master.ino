@@ -8,6 +8,9 @@ void setup() {
     sghMCU.setupHardwareSerial();
     sghMCU.setupBTSerial();
     Serial.println("Master MCU is ready!");
+
+    // Set sleep timer
+    // esp_sleep_enable_timer_wakeup(TIME_TO_SLEEP * uS_TO_S_FACTOR);
 }
 
 void loop() {
@@ -24,4 +27,7 @@ void loop() {
     delay(1000);
     sghMCU.send("0|0");
     delay(1000);
+
+    // Serial.println("Going to sleep now");
+    // esp_deep_sleep_start();
 }
