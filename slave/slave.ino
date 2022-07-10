@@ -49,8 +49,8 @@ void toggleIrrigation(uint8_t turnOn) {
 // Read the outside temperature from LM35 sensor
 float readLM35Sensor(void) {
   uint16_t reading = analogRead(LM35_PIN);
-  float voltage = reading * (1100 / 1024.0);
-  float temperature = voltage / 10;
+  float voltage = reading * 110.0 / 1023;
+  float temperature = voltage;
   return temperature;
 }
 
@@ -126,7 +126,7 @@ void loop() {
   if (sghMCU.hasMessage()) {
     char cmd[SERIAL_BUFFER_SIZE] = {0};
     sghMCU.receive(cmd);
-    Serial.print(cmd);
+    Serial.println(cmd);
     executeCommand(String(cmd));
   }
 }
