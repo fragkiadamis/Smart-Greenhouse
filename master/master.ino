@@ -4,6 +4,7 @@
 SmartGreenHouseSerial sghSerial;
 
 // State flags.
+uint8_t automatic = 0;
 bool acIsEnabled = false;
 bool coolingIsEnabled = false;
 bool heatingIsEnabled = false;
@@ -39,7 +40,7 @@ void requestLuminosity(float *luminosityRatio) {
     *luminosityRatio = sendCmdAndGetRes(cmd).toFloat();    // And send it.
 }
 
-// Request the humidity level inside the greenhouse
+// Request the humidity level inside the greenhouse.
 void requestHumidity(float *humidity) {
     String cmd = "";
 
@@ -48,7 +49,7 @@ void requestHumidity(float *humidity) {
     *humidity = sendCmdAndGetRes(cmd).toFloat();                            // And send it.
 }
 
-// Toggle irrigation
+// Toggle irrigation.
 void toggleIrrigation(bool state) {
     String cmd = "";
 
@@ -57,7 +58,7 @@ void toggleIrrigation(bool state) {
     String res = sendCmdAndGetRes(cmd);                   // And send it.
 }
 
-// Toggle buzzer
+// Toggle buzzer.
 void toggleBuzzer(bool state) {
     String cmd = "";
 
@@ -124,7 +125,7 @@ void stopAircondition(void) {
     heatingIsEnabled = false;
 }
 
-// Enable humidification / dehumidification process
+// Enable humidification / dehumidification process.
 void enableHumidityControl(bool humidify) {
     if (humidify)
         digitalWrite(AC_HUMIDIFICATION, HIGH);
@@ -132,7 +133,7 @@ void enableHumidityControl(bool humidify) {
         digitalWrite(AC_DEHUMIDIFICATION, HIGH);
 }
 
-// Stop humidification / dehumidification process
+// Stop humidification / dehumidification process.
 void stopHumidityControl(void) {
     digitalWrite(AC_HUMIDIFICATION, LOW);
     digitalWrite(AC_DEHUMIDIFICATION, LOW);
@@ -248,6 +249,11 @@ void setup() {
     // Setup hardware and bluetooth serial
     sghSerial.setupHardwareSerial();
     sghSerial.setupBTSerial();
+  
+    // initialize EEPROM with predefined size
+    EEPROM.begin(EEPROM_SIZE);
+    // Read the mode that the master works...
+    automatic = EEPROM.read(AUTOMATIC_ADDRESS);
 
     // Set sleep timer
     // esp_sleep_enable_timer_wakeup(TIME_TO_SLEEP * uS_TO_S_FACTOR);
@@ -257,10 +263,13 @@ void setup() {
 }
 
 void loop() {
-    handleTemperature();
-    handleLuminosity();
-    handleHumidity();
-    handleWaterTank();
+    // If the automatic mode is on, handle the greenhouse according to the automation rules.
+    if (automatic) {
+        handleTemperature();
+        handleLuminosity();
+        handleHumidity();
+        handleWaterTank();
+    }
 
     Serial.println("Going to sleep now");
     delay(1000);

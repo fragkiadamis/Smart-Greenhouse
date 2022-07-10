@@ -1,5 +1,10 @@
 // Include libraries
 #include <smart_greenhouse_serial.h>
+#include <EEPROM.h>
+
+// EEPROM
+#define EEPROM_SIZE 1
+#define AUTOMATIC_ADDRESS 0
 
 // Sleep
 #define uS_TO_S_FACTOR 1000000  // Conversion factor for micro seconds to seconds
