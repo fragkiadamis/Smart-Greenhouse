@@ -49,6 +49,7 @@ void SmartGreenHouseMCU::receive(char *buffer) {
         }
     }
     buffer[size] = '\0';
+    BTSerial.flush();
 }
 
 void SmartGreenHouseMCU::send(String msg) {
