@@ -236,7 +236,7 @@ void handleHumidity(void) {
 // Check the water tank level and handle it if needed.
 void handleWaterTank(void) {
     uint8_t reading = touchRead(WATER_TANK);
-    float mls = 9.646 * pow(10, -6) * 1390 + 2.9110 * pow(10, -4);
+    float mls = 9.646 * pow(10, -6) * reading + 2.9110 * pow(10, -4);
     float percentage = (mls / (float)MAX_LEVEL) * 100.0;
 
     if (percentage < WT_LOW_THRESHOLD)
