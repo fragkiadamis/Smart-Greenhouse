@@ -36,7 +36,7 @@ class SmartGreenHouseSerial {
         void setupHardwareSerial(void);
         void setupBTSerial(void);
         bool hasMessage(void);
-        void receive(char *buffer);
+        String receive(void);
         void send(String msg);
 };
 

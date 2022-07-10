@@ -124,10 +124,9 @@ void loop() {
 
   // If bluetooth buffer has a message
   if (sghSerial.hasMessage()) {
-    char cmd[SERIAL_BUFFER_SIZE] = {0};
-    sghSerial.receive(cmd);
+    String cmd = sghSerial.receive();
     Serial.println(cmd);
-    executeCommand(String(cmd));
+    executeCommand(cmd);
   }
 }
 
