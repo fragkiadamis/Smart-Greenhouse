@@ -6,7 +6,7 @@
 
 // Serials
 #define SERIAL_BUFFER_SIZE 16
-#define SERIAL_TIMEOUT 10000
+#define SERIAL_TIMEOUT 1000
 #define BAUD_RATE 115200
 #define BT_BAUD_RATE 38400
 #define SLAVE_BT_RX 10

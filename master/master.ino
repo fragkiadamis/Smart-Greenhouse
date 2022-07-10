@@ -26,8 +26,8 @@ void checkLuminosityDif(float *luminosityDif) {
     String cmd = "";
 
     // Read inner and outer temperature.
-    cmd = String(sghMCU.DHT_SENS) + '|' + String(sghMCU.LUM);  // Create command,
-    *luminosityDif = sendCmdAndGetRes(cmd).toFloat();          // And send it.
+    cmd = String(String(sghMCU.LUM));                   // Create command,
+    *luminosityDif = sendCmdAndGetRes(cmd).toFloat();   // And send it.
 }
 
 void setup() {
