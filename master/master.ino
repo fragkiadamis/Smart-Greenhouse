@@ -36,10 +36,15 @@ void requestLuminosity(float *luminosityRatio) {
 }
 
 // Determine window position by reading the capacitance sensors
-void determineWindowPosition(bool *fullyOpen, bool *halfOpen, bool *closed) {
-    *fullyOpen = (touchRead(UPPER_END) < TOUCH_THRESHOLD) ? true : false;
-    *halfOpen = (touchRead(MIDDLE) < TOUCH_THRESHOLD) ? true : false;
-    *closed = (touchRead(LOWER_END) < TOUCH_THRESHOLD) ? true : false;
+char determineWindowPosition(void) {
+    if (touchRead(UPPER_END) < TOUCH_THRESHOLD)
+        return 'u';
+    else if (touchRead(MIDDLE) < TOUCH_THRESHOLD)
+        return 'm';
+    else if (touchRead(LOWER_END) < TOUCH_THRESHOLD)
+        return 'l';
+
+    return 'e';
 }
 
 // Control the window shutter.
@@ -83,19 +88,15 @@ void stopAircondition(void) {
 }
 
 // Enable actuators if needed to handle atmosphere.
-void handleAtmosphere(void) {
+void handleTemperature(void) {
     // Initialize variables for atmospheric values.
     float innerTemperature = 0, outerTemperature = 0;
-    float luminosityRatio = 0;
-    // Initialze window positions.
-    bool windowIsOpen = false, windowInMiddle = false, windowIsClosed = false;
-
     // Get temperatures.
     requestTemperatures(&innerTemperature, &outerTemperature);
-    // Get luminosity ratio
-    requestLuminosity(&luminosityRatio);
-    // Determine window position.
-    determineWindowPosition(&windowIsOpen, &windowInMiddle, &windowIsClosed);
+
+    // Initialze window position and determine window position.
+    char windowPos = determineWindowPosition();
+    
 
     // When the temperature is inside this span, handle temperature by opening / closing the window.
     if (LOW_OUT_TEMP_THRESHOLD <= outerTemperature <= HIGH_OUT_TEMP_THRESHOLD) {
@@ -105,7 +106,7 @@ void handleAtmosphere(void) {
 
         // In case where the inner temperature is higher more
         // than 1 degree from the external temperature, open the window.
-        if ((innerTemperature > outerTemperature + 1) && !windowIsOpen) {
+        if ((innerTemperature > outerTemperature + 1) && windowPos != 'u') {
             controlShutter(UPPER_END, HIGH, LOW);
 
             // Allow window opening
@@ -113,12 +114,12 @@ void handleAtmosphere(void) {
         }
         // In case where the inner temperature is lower more
         // than 1 degree from the external temperature, close the window.
-        else if ((innerTemperature < outerTemperature - 1) && !windowIsClosed)
+        else if ((innerTemperature < outerTemperature - 1) && windowPos != 'l')
             controlShutter(LOWER_END, LOW, HIGH);
 
     // Else handle temperature using the air-condition with the window closed.
     } else {
-        if (!windowIsClosed)
+        if (windowPos != 'l')
             controlShutter(LOWER_END, LOW, HIGH);
         
         // Enable air-condition, and determine cooling or heating.
@@ -126,22 +127,27 @@ void handleAtmosphere(void) {
         // Do not allow window opening
         openWindowIsAllowed = false;
     }
+}
+
+void handleLuminosity(void) {
+    float luminosityRatio = 0;
+    // Get luminosity ratio
+    requestLuminosity(&luminosityRatio);
 
     // Re-new the values that represent the window position
-    determineWindowPosition(&windowIsOpen, &windowInMiddle, &windowIsClosed);
+    char windowPos = determineWindowPosition();
     
     // When the light intensity is inside this span, re-adjust window position for optimal light intensity
     if ((LOW_LUMINOSITY_THRESHOLD <= luminosityRatio <= HIGH_LUMINOSITY_THRESHOLD) && openWindowIsAllowed) {
-        if ((LOW_LUMINOSITY_THRESHOLD <= luminosityRatio < 60) && !windowIsOpen)
+        if ((LOW_LUMINOSITY_THRESHOLD <= luminosityRatio < 60) && windowPos != 'u')
             controlShutter(UPPER_END, HIGH, LOW); // Fully open the window
         else if (60 <= luminosityRatio <= HIGH_LUMINOSITY_THRESHOLD) {
-            if (!windowInMiddle) {
+            if (windowPos != 'm')
                 // Set the window in the middle position by half-opening it or half-closing it
-                if (windowIsClosed)
+                if (windowPos == 'l')
                     controlShutter(MIDDLE, HIGH, LOW); // Half-open
-                else if (windowIsOpen)
+                else if (windowPos == 'u')
                     controlShutter(MIDDLE, LOW, HIGH); // Half-close
-            }
         }
     } else {
         if (luminosityRatio < LOW_LUMINOSITY_THRESHOLD)
@@ -164,7 +170,8 @@ void setup() {
 }
 
 void loop() {
-    handleAtmosphere();
+    handleTemperature();
+    handleLuminosity();
 
     Serial.println("Going to sleep now");
     delay(1000);
