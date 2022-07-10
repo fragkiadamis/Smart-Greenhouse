@@ -49,12 +49,21 @@ void requestHumidity(float *humidity) {
 }
 
 // Toggle irrigation
-void startIrrigation(bool state) {
+void toggleIrrigation(bool state) {
     String cmd = "";
 
     // Read inner and outer temperature.
     cmd = String(sghSerial.IRG) + '|' + String(state);    // Create command,
-    String res = sendCmdAndGetRes(cmd);                    // And send it.
+    String res = sendCmdAndGetRes(cmd);                   // And send it.
+}
+
+// Toggle buzzer
+void toggleBuzzer(bool state) {
+    String cmd = "";
+
+    // Read inner and outer temperature.
+    cmd = String(sghSerial.BZ) + '|' + String(state);     // Create command,
+    String res = sendCmdAndGetRes(cmd);                   // And send it.
 }
 
 // Determine window position by reading the capacitance sensors.
@@ -224,9 +233,16 @@ void handleHumidity(void) {
 }
 
 // Check the water tank level and handle it if needed.
-// void handleWaterTank(void) {
+void handleWaterTank(void) {
+    uint8_t reading = touchRead(WATER_TANK);
+    float mls = 9.646 * pow(10, -6) * 1390 + 2.9110 * pow(10, -4);
+    float percentage = (mls / (float)MAX_LEVEL) * 100.0;
 
-// }
+    if (percentage < WT_LOW_THRESHOLD)
+        toggleBuzzer(true);
+    else if (percentage >= WT_STOP_THRESHOLD)
+        toggleBuzzer(false);
+}
 
 void setup() {
     // Setup hardware and bluetooth serial
@@ -241,10 +257,10 @@ void setup() {
 }
 
 void loop() {
-    // handleTemperature();
-    // handleLuminosity();
-    // handleHumidity();
-    // handleWaterTank();
+    handleTemperature();
+    handleLuminosity();
+    handleHumidity();
+    handleWaterTank();
 
     Serial.println("Going to sleep now");
     delay(1000);

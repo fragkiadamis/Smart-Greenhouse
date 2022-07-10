@@ -30,6 +30,12 @@
 #define LOW_HUMIDITY_THRESHOLD 50
 #define HIGH_HUMIDITY_THRESHOLD 70
 
+// Wate Tank
+#define WATER_TANK T8
+#define MAX_LEVEL 500
+#define WT_LOW_THRESHOLD 25
+#define WT_STOP_THRESHOLD 80
+
 // Air-Condition
 #define AC_MOTOR_PIN1 8
 #define AC_MOTOR_PIN2 9
