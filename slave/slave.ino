@@ -85,7 +85,9 @@ void executeCommand(String cmd) {
     float luminosityPerc = luminocityPercentage(value);
     sghSerial.send(String(luminosityPerc));
   } else {
+    #ifdef DEBUG
     Serial.println(F("Undefined command"));
+    #endif
   }
 }
 
@@ -113,7 +115,9 @@ void setup() {
 
   // Set the reference voltage for analog input to the built-in 1.1
   analogReference(INTERNAL);
+  #ifdef DEBUG
   Serial.println("Slave MCU is ready!");
+  #endif
 }
 
 void loop() {
@@ -125,7 +129,9 @@ void loop() {
   // If bluetooth buffer has a message
   if (sghSerial.hasMessage()) {
     String cmd = sghSerial.receive();
+    #ifdef DEBUG
     Serial.println(cmd);
+    #endif
     executeCommand(cmd);
   }
 }

@@ -8,6 +8,7 @@
 #define SSID "COSMOTE-304503"
 #define PWD "gm8un268me928dht"
 #define MQTT_SERVER "192.168.1.4"
+#define PORT 1883
 
 // EEPROM
 #define EEPROM_SIZE 1

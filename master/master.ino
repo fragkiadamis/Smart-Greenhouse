@@ -147,8 +147,10 @@ void handleTemperature(void) {
     float innerTemperature = 0, outerTemperature = 0;
     // Get temperatures.
     requestTemperatures(&innerTemperature, &outerTemperature);
+    #ifdef DEBUG
     Serial.println("Inner temperature ratio: " + String(innerTemperature));
     Serial.println("Outer temperature ratio: " + String(outerTemperature));
+    #endif
 
     // Initialze window position and determine window position.
     char windowPos = determineWindowPosition();
@@ -196,7 +198,9 @@ void handleLuminosity(void) {
     float luminosityRatio = 0;
     // Get luminosity ratio
     requestLuminosity(&luminosityRatio);
+    #ifdef DEBUG
     Serial.println("Luminosity ratio: " + String(luminosityRatio));
+    #endif
 
     // Re-new the values that represent the window position
     char windowPos = determineWindowPosition();
@@ -228,7 +232,9 @@ void handleHumidity(void) {
     float humidity = 0;
     // Get humidity level
     requestHumidity(&humidity);
+    #ifdef DEBUG
     Serial.println("Humidity: " + String(humidity));
+    #endif
 
     if ((LOW_HUMIDITY_THRESHOLD <= humidity <= HIGH_HUMIDITY_THRESHOLD) && humControlIsOn)
         stopHumidityControl();
@@ -252,36 +258,49 @@ void handleWaterTank(void) {
 
 // Setup WiFi
 void setupWiFi(void) {
+    #ifdef DEBUG
     Serial.print("Connecting to ");
     Serial.println(SSID);
+    #endif
 
     WiFi.begin(SSID, PWD);
     while (WiFi.status() != WL_CONNECTED) {
+        #ifdef DEBUG
         delay(500);
+        Serial.print("Connecting");
         Serial.print(".");
+        #endif
     }
 
+    #ifdef DEBUG
     Serial.println();
     Serial.println("WiFi connected");
     Serial.println("IP address: ");
     Serial.println(WiFi.localIP());
+    #endif
 }
 
 // Reconnect to MQTT server.
 void reconnect() {
     // Loop until we're reconnected
     while (!client.connected()) {
-        Serial.print("Attempting MQTT connection...");
+        #ifdef DEBUG
+        Serial.println("Attempting MQTT connection...");
+        #endif
         // Attempt to connect
         if (client.connect("ESP32Client")) {
+            #ifdef DEBUG
             Serial.println("connected");
+            #endif
             // Subscribe
-            client.subscribe("esp32/output");
-            client.subscribe("esp32/input");
+            client.subscribe("esp32/out");
+            // client.subscribe("esp32/input");
         } else {
+            #ifdef DEBUG
             Serial.print("failed, rc=");
             Serial.print(client.state());
             Serial.println(" try again in 5 seconds");
+            #endif
             // Wait 5 seconds before retrying
             delay(5000);
         }
@@ -290,14 +309,22 @@ void reconnect() {
 
 // MQTT callback function.
 void callback(char* topic, byte* message, unsigned int length) {
-  Serial.print("Message arrived on topic: ");
-  Serial.print(topic);
-  Serial.print(". Message: ");
+    #ifdef DEBUG
+    Serial.print("Message arrived on topic: ");
+    Serial.print(topic);
+    Serial.print(". Message: ");
+
+    for (int i = 0; i < length; i++)
+        Serial.print((char)message[i]);
+    Serial.println();
+    #endif
 }
 
 void setup() {
     // Setup hardware and bluetooth serial
+    #ifdef DEBUG
     sghSerial.setupHardwareSerial();
+    #endif
     sghSerial.setupBTSerial();
   
     // initialize EEPROM with predefined size
@@ -306,14 +333,15 @@ void setup() {
     automatic = EEPROM.read(AUTOMATIC_ADDRESS);
 
     setupWiFi();
-    client.setServer(MQTT_SERVER, 1883);
+    client.setServer(MQTT_SERVER, PORT);
     client.setCallback(callback);
 
     // Set sleep timer
     // esp_sleep_enable_timer_wakeup(TIME_TO_SLEEP * uS_TO_S_FACTOR);
 
-    delay(1000);
+    #ifdef DEBUG
     Serial.println("Master MCU is ready!");
+    #endif
 }
 
 void loop() {
@@ -324,13 +352,12 @@ void loop() {
 
     // If the automatic mode is on, handle the greenhouse according to the automation rules.
     if (automatic) {
-        handleTemperature();
-        handleLuminosity();
-        handleHumidity();
-        handleWaterTank();
+        // handleTemperature();
+        // handleLuminosity();
+        // handleHumidity();
+        // handleWaterTank();
     }
-
-    Serial.println("Going to sleep now");
-    delay(1000);
+    
+    // Fall asleep
     // esp_light_sleep_start();
 }
