@@ -5,6 +5,7 @@ SmartGreenHouseMCU sghMCU;
 
 // State flasgs
 bool acIsEnabled = false;
+bool openWindowIsAllowed = true;
 
 String sendCmdAndGetRes(String cmd) {
     sghMCU.send(cmd);
@@ -96,16 +97,6 @@ void handleAtmosphere(void) {
     // Determine window position.
     determineWindowPosition(&windowIsOpen, &windowInMiddle, &windowIsClosed);
 
-    // Serial.println("Inner Temp: " + String(innerTemperature));
-    // Serial.println("Outer Temp: " + String(outerTemperature));
-    // Serial.println("Luminosity Percentage: " + String(luminosityRatio));
-    // if (windowIsOpen)
-    //     Serial.println("Window is fully open");
-    // else if (windowInMiddle)
-    //     Serial.println("Window is half open");
-    // else if (windowIsClosed)
-    //     Serial.println("Window is closed");
-
     // When the temperature is inside this span, handle temperature by opening / closing the window.
     if (LOW_OUT_TEMP_THRESHOLD <= outerTemperature <= HIGH_OUT_TEMP_THRESHOLD) {
         // Start by stoping the AC if it was on from a previous circle.
@@ -114,24 +105,50 @@ void handleAtmosphere(void) {
 
         // In case where the inner temperature is higher more
         // than 1 degree from the external temperature, open the window.
-        if ((innerTemperature > outerTemperature + 1) && !windowIsOpen)
-            controlShutter(UPPER_END, 1, 0);
+        if ((innerTemperature > outerTemperature + 1) && !windowIsOpen) {
+            controlShutter(UPPER_END, HIGH, LOW);
+
+            // Allow window opening
+            openWindowIsAllowed = true;
+        }
         // In case where the inner temperature is lower more
         // than 1 degree from the external temperature, close the window.
         else if ((innerTemperature < outerTemperature - 1) && !windowIsClosed)
-            controlShutter(LOWER_END, 0, 1);
+            controlShutter(LOWER_END, LOW, HIGH);
 
     // Else handle temperature using the air-condition with the window closed.
     } else {
         if (!windowIsClosed)
-            controlShutter(LOWER_END, 0, 1);
+            controlShutter(LOWER_END, LOW, HIGH);
         
         // Enable air-condition, and determine cooling or heating.
-        enableAircondition((innerTemperature > outerTemperature) ? 1 : 0);
+        enableAircondition((innerTemperature > outerTemperature) ? true : false);
+        // Do not allow window opening
+        openWindowIsAllowed = false;
     }
 
-    // Renew the values that represent the window position
+    // Re-new the values that represent the window position
     determineWindowPosition(&windowIsOpen, &windowInMiddle, &windowIsClosed);
+    
+    // When the light intensity is inside this span, re-adjust window position for optimal light intensity
+    if ((LOW_LUMINOSITY_THRESHOLD <= luminosityRatio <= HIGH_LUMINOSITY_THRESHOLD) && openWindowIsAllowed) {
+        if ((LOW_LUMINOSITY_THRESHOLD <= luminosityRatio < 60) && !windowIsOpen)
+            controlShutter(UPPER_END, HIGH, LOW); // Fully open the window
+        else if (60 <= luminosityRatio <= HIGH_LUMINOSITY_THRESHOLD) {
+            if (!windowInMiddle) {
+                // Set the window in the middle position by half-opening it or half-closing it
+                if (windowIsClosed)
+                    controlShutter(MIDDLE, HIGH, LOW); // Half-open
+                else if (windowIsOpen)
+                    controlShutter(MIDDLE, LOW, HIGH); // Half-close
+            }
+        }
+    } else {
+        if (luminosityRatio < LOW_LUMINOSITY_THRESHOLD)
+            digitalWrite(ARTIFICIAL_LIGHTING, HIGH);
+        else if (luminosityRatio > HIGH_LUMINOSITY_THRESHOLD)
+            digitalWrite(ARTIFICIAL_LIGHTING, LOW);
+    }
 }
 
 void setup() {
