@@ -147,8 +147,8 @@ void handleTemperature(void) {
     float innerTemperature = 0, outerTemperature = 0;
     // Get temperatures.
     requestTemperatures(&innerTemperature, &outerTemperature);
-    Serial.println("Inner temperature ration: " + String(innerTemperature));
-    Serial.println("Outer temperature ration: " + String(outerTemperature));
+    Serial.println("Inner temperature ratio: " + String(innerTemperature));
+    Serial.println("Outer temperature ratio: " + String(outerTemperature));
 
     // Initialze window position and determine window position.
     char windowPos = determineWindowPosition();
@@ -196,7 +196,7 @@ void handleLuminosity(void) {
     float luminosityRatio = 0;
     // Get luminosity ratio
     requestLuminosity(&luminosityRatio);
-    Serial.println("Luminosity ration: " + String(luminosityRatio));
+    Serial.println("Luminosity ratio: " + String(luminosityRatio));
 
     // Re-new the values that represent the window position
     char windowPos = determineWindowPosition();
