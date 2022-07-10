@@ -1,6 +1,13 @@
 // Include libraries
 #include <smart_greenhouse_serial.h>
 #include <EEPROM.h>
+#include <WiFi.h>
+#include <PubSubClient.h>
+
+// MQTT
+#define SSID "COSMOTE-304503"
+#define PWD "gm8un268me928dht"
+#define MQTT_SERVER "192.168.1.4"
 
 // EEPROM
 #define EEPROM_SIZE 1

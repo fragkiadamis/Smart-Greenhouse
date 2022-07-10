@@ -3,6 +3,10 @@
 // Initialize communication protocol and serial handling.
 SmartGreenHouseSerial sghSerial;
 
+// Initialize WiFi MQTT client
+WiFiClient espClient;
+PubSubClient client(espClient);
+
 // State flags.
 uint8_t automatic = 0;
 bool acIsEnabled = false;
@@ -245,6 +249,51 @@ void handleWaterTank(void) {
         toggleBuzzer(false);
 }
 
+// Setup WiFi
+void setupWiFi(void) {
+    Serial.print("Connecting to ");
+    Serial.println(SSID);
+
+    WiFi.begin(SSID, PWD);
+    while (WiFi.status() != WL_CONNECTED) {
+        delay(500);
+        Serial.print(".");
+    }
+
+    Serial.println();
+    Serial.println("WiFi connected");
+    Serial.println("IP address: ");
+    Serial.println(WiFi.localIP());
+}
+
+// Reconnect to MQTT server.
+void reconnect() {
+    // Loop until we're reconnected
+    while (!client.connected()) {
+        Serial.print("Attempting MQTT connection...");
+        // Attempt to connect
+        if (client.connect("ESP32Client")) {
+            Serial.println("connected");
+            // Subscribe
+            client.subscribe("esp32/output");
+            client.subscribe("esp32/input");
+        } else {
+            Serial.print("failed, rc=");
+            Serial.print(client.state());
+            Serial.println(" try again in 5 seconds");
+            // Wait 5 seconds before retrying
+            delay(5000);
+        }
+    }
+}
+
+// MQTT callback function.
+void callback(char* topic, byte* message, unsigned int length) {
+  Serial.print("Message arrived on topic: ");
+  Serial.print(topic);
+  Serial.print(". Message: ");
+}
+
 void setup() {
     // Setup hardware and bluetooth serial
     sghSerial.setupHardwareSerial();
@@ -255,6 +304,10 @@ void setup() {
     // Read the mode that the master works...
     automatic = EEPROM.read(AUTOMATIC_ADDRESS);
 
+    setupWiFi();
+    client.setServer(MQTT_SERVER, 1883);
+    client.setCallback(callback);
+
     // Set sleep timer
     // esp_sleep_enable_timer_wakeup(TIME_TO_SLEEP * uS_TO_S_FACTOR);
 
@@ -263,6 +316,10 @@ void setup() {
 }
 
 void loop() {
+    if (!client.connected())
+        reconnect();
+    client.loop();
+
     // If the automatic mode is on, handle the greenhouse according to the automation rules.
     if (automatic) {
         handleTemperature();
