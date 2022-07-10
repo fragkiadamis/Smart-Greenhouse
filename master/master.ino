@@ -7,6 +7,7 @@ SmartGreenHouseSerial sghSerial;
 bool acIsEnabled = false;
 bool coolingIsEnabled = false;
 bool heatingIsEnabled = false;
+bool humControlIsOn = false;
 bool openWindowIsAllowed = true;
 
 // Send message via bluetooth and wait for a response.
@@ -24,7 +25,7 @@ void requestTemperatures(float *innerTemperature, float *outerTemperature) {
 
     // Read inner and outer temperature.
     cmd = String(sghSerial.DHT_SENS) + '|' + String(sghSerial.INNER_TEMP);    // Create command,
-    *innerTemperature = sendCmdAndGetRes(cmd).toFloat();                // And send it.
+    *innerTemperature = sendCmdAndGetRes(cmd).toFloat();                      // And send it.
     cmd = String(String(sghSerial.OUTER_TEMP));
     *outerTemperature = sendCmdAndGetRes(cmd).toFloat();
 }
@@ -35,7 +36,16 @@ void requestLuminosity(float *luminosityRatio) {
 
     // Read inner and outer temperature.
     cmd = String(String(sghSerial.LUM));                   // Create command,
-    *luminosityRatio = sendCmdAndGetRes(cmd).toFloat();   // And send it.
+    *luminosityRatio = sendCmdAndGetRes(cmd).toFloat();    // And send it.
+}
+
+// Request the humidity level inside the greenhouse
+void requestHumidity(float *humidity) {
+    String cmd = "";
+
+    // Read inner and outer temperature.
+    cmd = String(sghSerial.DHT_SENS) + '|' + String(sghSerial.HUMIDITY);    // Create command,
+    *humidity = sendCmdAndGetRes(cmd).toFloat();                            // And send it.
 }
 
 // Determine window position by reading the capacitance sensors.
@@ -94,6 +104,20 @@ void stopAircondition(void) {
     acIsEnabled = false;
     coolingIsEnabled = false;
     heatingIsEnabled = false;
+}
+
+// Enable humidification / dehumidification process
+void enableHumidityControl(bool humidify) {
+    if (humidify)
+        digitalWrite(AC_HUMIDIFICATION, HIGH);
+    else
+        digitalWrite(AC_DEHUMIDIFICATION, HIGH);
+}
+
+// Stop humidification / dehumidification process
+void stopHumidityControl(void) {
+    digitalWrite(AC_HUMIDIFICATION, LOW);
+    digitalWrite(AC_DEHUMIDIFICATION, LOW);
 }
 
 // Check the temperature and handle it if needed.
@@ -175,9 +199,19 @@ void handleLuminosity(void) {
     }
 }
 
-// Check the water tank level and send to slave to enable buzzer if needed.
-void handleWaterTank(void) {
+// Check the humidity level and handle it if needed.
+void handleHumidity(void) {
+    float humidity = 0;
+    // Get humidity level
+    requestHumidity(&humidity);
+    Serial.println("Humidity: " + String(humidity));
 
+    if ((LOW_HUMIDITY_THRESHOLD <= humidity <= HIGH_HUMIDITY_THRESHOLD) && humControlIsOn)
+        stopHumidityControl();
+    else if ((humidity < LOW_HUMIDITY_THRESHOLD) && !humControlIsOn)
+        enableHumidityControl(true);
+    else if (humidity > HIGH_HUMIDITY_THRESHOLD && !humControlIsOn)
+        enableHumidityControl(false);
 }
 
 void setup() {
@@ -193,9 +227,9 @@ void setup() {
 }
 
 void loop() {
-    handleTemperature();
-    handleLuminosity();
-    handleWaterTank();
+    // handleTemperature();
+    // handleLuminosity();
+    handleHumidity();
 
     Serial.println("Going to sleep now");
     delay(1000);
