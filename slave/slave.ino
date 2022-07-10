@@ -2,7 +2,7 @@
 #include "slave.h"
 
 // Initialize communication protocol and serial handling
-SmartGreenHouseMCU sghMCU;
+SmartGreenHouseSerial sghSerial;
 // Initialize DHT sensor
 DHT dht(DHT_PIN, DHT_TYPE);
 // Initialize Servo
@@ -28,8 +28,8 @@ float readDHTSensor(uint8_t sensor) {
   float val = 0;
 
   switch (sensor) {
-    case sghMCU.HUMIDITY: val = dht.readHumidity(); break;
-    case sghMCU.INNER_TEMP: val = dht.readTemperature(); break;
+    case sghSerial.HUMIDITY: val = dht.readHumidity(); break;
+    case sghSerial.INNER_TEMP: val = dht.readTemperature(); break;
   }
   
   if (isnan(val))
@@ -71,19 +71,19 @@ void executeCommand(String cmd) {
   if (splitIndex)
     value = (cmd.substring(splitIndex + 1, cmd.length())).toInt();
 
-  if (action == sghMCU.BZ)
+  if (action == sghSerial.BZ)
     return toggleBuzzer(value);
-  else if (action == sghMCU.DHT_SENS) {
+  else if (action == sghSerial.DHT_SENS) {
     float sensorValue = readDHTSensor(value);
-    sghMCU.send(String(sensorValue));
-  } else if (action == sghMCU.IRG)
+    sghSerial.send(String(sensorValue));
+  } else if (action == sghSerial.IRG)
     return toggleIrrigation(value);
-  else if (action == sghMCU.OUTER_TEMP) {
+  else if (action == sghSerial.OUTER_TEMP) {
     float temperature = readLM35Sensor();
-    sghMCU.send(String(temperature));
-  } else if (action == sghMCU.LUM) {
+    sghSerial.send(String(temperature));
+  } else if (action == sghSerial.LUM) {
     float luminosityPerc = luminocityPercentage(value);
-    sghMCU.send(String(luminosityPerc));
+    sghSerial.send(String(luminosityPerc));
   } else {
     Serial.println(F("Undefined command"));
   }
@@ -91,8 +91,8 @@ void executeCommand(String cmd) {
 
 void setup() {
   // Setup hardware and bluetooth serial
-  sghMCU.setupHardwareSerial();
-  sghMCU.setupBTSerial();
+  sghSerial.setupHardwareSerial();
+  sghSerial.setupBTSerial();
 
   // Setup Outputs
   pinMode(BUZZER_PIN, OUTPUT);
@@ -123,9 +123,9 @@ void loop() {
   // detachInterrupt(digitalPinToInterrupt(INTERRUPT_PIN));
 
   // If bluetooth buffer has a message
-  if (sghMCU.hasMessage()) {
+  if (sghSerial.hasMessage()) {
     char cmd[SERIAL_BUFFER_SIZE] = {0};
-    sghMCU.receive(cmd);
+    sghSerial.receive(cmd);
     Serial.println(cmd);
     executeCommand(String(cmd));
   }

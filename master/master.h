@@ -1,6 +1,5 @@
 // Include libraries
-#include <smart_greenhouse_mcu.h>
-#include <EEPROM.h>
+#include <smart_greenhouse_serial.h>
 
 // Sleep
 #define uS_TO_S_FACTOR 1000000  // Conversion factor for micro seconds to seconds

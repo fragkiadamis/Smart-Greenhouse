@@ -1,17 +1,17 @@
 #include "master.h"
 
-// Initialize communication protocol and serial handling
-SmartGreenHouseMCU sghMCU;
+// Initialize communication protocol and serial handling.
+SmartGreenHouseSerial sghSerial;
 
-// State flasgs
+// State flags.
 bool acIsEnabled = false;
 bool openWindowIsAllowed = true;
 
 String sendCmdAndGetRes(String cmd) {
-    sghMCU.send(cmd);
-    while (!sghMCU.hasMessage());
+    sghSerial.send(cmd);
+    while (!sghSerial.hasMessage());
     char res[SERIAL_BUFFER_SIZE] = {0};
-    sghMCU.receive(res);
+    sghSerial.receive(res);
     return String(res);
 }
 
@@ -20,22 +20,22 @@ void requestTemperatures(float *innerTemperature, float *outerTemperature) {
     String cmd = "";
 
     // Read inner and outer temperature.
-    cmd = String(sghMCU.DHT_SENS) + '|' + String(sghMCU.INNER_TEMP);    // Create command,
+    cmd = String(sghSerial.DHT_SENS) + '|' + String(sghSerial.INNER_TEMP);    // Create command,
     *innerTemperature = sendCmdAndGetRes(cmd).toFloat();                // And send it.
-    cmd = String(String(sghMCU.OUTER_TEMP));
+    cmd = String(String(sghSerial.OUTER_TEMP));
     *outerTemperature = sendCmdAndGetRes(cmd).toFloat();
 }
 
-// Request the inside / outside luminosity ratio of the greenhouse
+// Request the inside / outside luminosity ratio of the greenhouse.
 void requestLuminosity(float *luminosityRatio) {
     String cmd = "";
 
     // Read inner and outer temperature.
-    cmd = String(String(sghMCU.LUM));                   // Create command,
+    cmd = String(String(sghSerial.LUM));                   // Create command,
     *luminosityRatio = sendCmdAndGetRes(cmd).toFloat();   // And send it.
 }
 
-// Determine window position by reading the capacitance sensors
+// Determine window position by reading the capacitance sensors.
 char determineWindowPosition(void) {
     if (touchRead(UPPER_END) < TOUCH_THRESHOLD)
         return 'u';
@@ -59,7 +59,7 @@ void controlShutter(uint8_t sensor, uint8_t pin1Val, uint8_t pin2Val) {
     digitalWrite(SHUTTER_MOTOR_PIN2, LOW);
 }
 
-// Start air-condition
+// Start air-condition.
 void enableAircondition(bool cooling) {
     // Setup or change mode (cooling or heating).
     if (cooling)
@@ -76,7 +76,7 @@ void enableAircondition(bool cooling) {
     acIsEnabled = true;
 }
 
-// Stop the aircondition
+// Stop the aircondition.
 void stopAircondition(void) {
     digitalWrite(AC_COOLING, LOW);
     digitalWrite(AC_HEATING, LOW);
@@ -87,7 +87,7 @@ void stopAircondition(void) {
     acIsEnabled = false;
 }
 
-// Enable actuators if needed to handle atmosphere.
+// Check the temperature and handle it if needed.
 void handleTemperature(void) {
     // Initialize variables for atmospheric values.
     float innerTemperature = 0, outerTemperature = 0;
@@ -129,6 +129,7 @@ void handleTemperature(void) {
     }
 }
 
+// Check luminosity ratio and handle it if needed.
 void handleLuminosity(void) {
     float luminosityRatio = 0;
     // Get luminosity ratio
@@ -139,9 +140,11 @@ void handleLuminosity(void) {
     
     // When the light intensity is inside this span, re-adjust window position for optimal light intensity
     if ((LOW_LUMINOSITY_THRESHOLD <= luminosityRatio <= HIGH_LUMINOSITY_THRESHOLD) && openWindowIsAllowed) {
-        if ((LOW_LUMINOSITY_THRESHOLD <= luminosityRatio < 60) && windowPos != 'u')
+        uint8_t middleThreshold = (HIGH_LUMINOSITY_THRESHOLD + LOW_LUMINOSITY_THRESHOLD) / 2;
+
+        if ((LOW_LUMINOSITY_THRESHOLD <= luminosityRatio < middleThreshold) && windowPos != 'u')
             controlShutter(UPPER_END, HIGH, LOW); // Fully open the window
-        else if (60 <= luminosityRatio <= HIGH_LUMINOSITY_THRESHOLD) {
+        else if (middleThreshold <= luminosityRatio <= HIGH_LUMINOSITY_THRESHOLD) {
             if (windowPos != 'm')
                 // Set the window in the middle position by half-opening it or half-closing it
                 if (windowPos == 'l')
@@ -157,10 +160,15 @@ void handleLuminosity(void) {
     }
 }
 
+// Check the water tank level and send to slave to enable buzzer if needed.
+void handleWaterTank(void) {
+
+}
+
 void setup() {
     // Setup hardware and bluetooth serial
-    sghMCU.setupHardwareSerial();
-    sghMCU.setupBTSerial();
+    sghSerial.setupHardwareSerial();
+    sghSerial.setupBTSerial();
 
     // Set sleep timer
     // esp_sleep_enable_timer_wakeup(TIME_TO_SLEEP * uS_TO_S_FACTOR);
@@ -172,6 +180,7 @@ void setup() {
 void loop() {
     handleTemperature();
     handleLuminosity();
+    handleWaterTank();
 
     Serial.println("Going to sleep now");
     delay(1000);

@@ -14,7 +14,7 @@
 #define MASTER_BT_RX 16
 #define MASTER_BT_TX 17
 
-class SmartGreenHouseMCU {
+class SmartGreenHouseSerial {
     private:
     public:
         // DHT sensors enumeration - Communication Protocol

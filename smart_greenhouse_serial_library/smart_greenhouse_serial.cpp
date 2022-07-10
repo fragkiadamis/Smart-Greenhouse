@@ -1,4 +1,4 @@
-#include "smart_greenhouse_mcu.h"
+#include "smart_greenhouse_serial.h"
 
 /*
  Determine The serial that is going to be used
@@ -12,14 +12,14 @@
     SoftwareSerial BTSerial(SLAVE_BT_RX, SLAVE_BT_TX); // Set software serial as BTSerial
 #endif
 
-void SmartGreenHouseMCU::setupHardwareSerial(void) {
+void SmartGreenHouseSerial::setupHardwareSerial(void) {
     // Setup hardware serial
     Serial.begin(BAUD_RATE);
     while(!Serial);
     Serial.flush();
 }
 
-void SmartGreenHouseMCU::setupBTSerial(void) {
+void SmartGreenHouseSerial::setupBTSerial(void) {
     // Setup bluetooth serial, according to MCU type
 #if defined(ESP_PLATFORM)
     BTSerial.begin(BT_BAUD_RATE, SERIAL_8N1, MASTER_BT_RX, MASTER_BT_TX);
@@ -30,11 +30,11 @@ void SmartGreenHouseMCU::setupBTSerial(void) {
     BTSerial.flush();
 }
 
-bool SmartGreenHouseMCU::hasMessage(void) {
+bool SmartGreenHouseSerial::hasMessage(void) {
     return BTSerial.available();
 }
     
-void SmartGreenHouseMCU::receive(char *buffer) {
+void SmartGreenHouseSerial::receive(char *buffer) {
     uint8_t size = 0;
     unsigned long time = micros();
 
@@ -52,6 +52,6 @@ void SmartGreenHouseMCU::receive(char *buffer) {
     BTSerial.flush();
 }
 
-void SmartGreenHouseMCU::send(String msg) {
+void SmartGreenHouseSerial::send(String msg) {
     BTSerial.println(msg);
 }
