@@ -5,8 +5,11 @@ SmartGreenHouseSerial sghSerial;
 
 // State flags.
 bool acIsEnabled = false;
+bool coolingIsEnabled = false;
+bool heatingIsEnabled = false;
 bool openWindowIsAllowed = true;
 
+// Send message via bluetooth and wait for a response.
 String sendCmdAndGetRes(String cmd) {
     sghSerial.send(cmd);
     while (!sghSerial.hasMessage());
@@ -62,18 +65,22 @@ void controlShutter(uint8_t sensor, uint8_t pin1Val, uint8_t pin2Val) {
 // Start air-condition.
 void enableAircondition(bool cooling) {
     // Setup or change mode (cooling or heating).
-    if (cooling)
+    if (cooling) {
         digitalWrite(AC_COOLING, HIGH);
-    else
+        coolingIsEnabled = true;
+        heatingIsEnabled = false;
+    } else {
         digitalWrite(AC_HEATING, HIGH);
+        coolingIsEnabled = false;
+        heatingIsEnabled = true;
+    }
 
     // If it is not already on, then turn it on...
     if (!acIsEnabled) {
         digitalWrite(AC_MOTOR_PIN1, HIGH);
         digitalWrite(AC_MOTOR_PIN2, LOW);
+        acIsEnabled = true;
     }
-    
-    acIsEnabled = true;
 }
 
 // Stop the aircondition.
@@ -85,6 +92,8 @@ void stopAircondition(void) {
     digitalWrite(AC_MOTOR_PIN2, LOW);
     
     acIsEnabled = false;
+    coolingIsEnabled = false;
+    heatingIsEnabled = false;
 }
 
 // Check the temperature and handle it if needed.
@@ -96,25 +105,27 @@ void handleTemperature(void) {
 
     // Initialze window position and determine window position.
     char windowPos = determineWindowPosition();
-    
+
+    // Stop air-condition if it is on and the atmosphere is OK.
+    if (acIsEnabled) {
+        bool coolingIsOK = coolingIsEnabled && innerTemperature < AC_LOW_STOP_TEMP;
+        bool heatingIsOK = heatingIsEnabled && innerTemperature > AC_HIGH_STOP_TEMP;
+        if (coolingIsOK || heatingIsOK)
+            stopAircondition();
+    }
 
     // When the temperature is inside this span, handle temperature by opening / closing the window.
-    if (LOW_OUT_TEMP_THRESHOLD <= outerTemperature <= HIGH_OUT_TEMP_THRESHOLD) {
-        // Start by stoping the AC if it was on from a previous circle.
-        if (acIsEnabled)
-            stopAircondition();
-
-        // In case where the inner temperature is higher more
-        // than 1 degree from the external temperature, open the window.
-        if ((innerTemperature > outerTemperature + 1) && windowPos != 'u') {
+    if ((LOW_OUT_TEMP_THRESHOLD <= outerTemperature <= HIGH_OUT_TEMP_THRESHOLD) && !acIsEnabled) {
+        // In case where the inner temperature is up to 1 degree
+        // higher from the external temperature, open the window.
+        if ((outerTemperature < innerTemperature <= outerTemperature + 1) && windowPos != 'u') {
             controlShutter(UPPER_END, HIGH, LOW);
-
             // Allow window opening
             openWindowIsAllowed = true;
-        }
+
         // In case where the inner temperature is lower more
         // than 1 degree from the external temperature, close the window.
-        else if ((innerTemperature < outerTemperature - 1) && windowPos != 'l')
+        } else if ((outerTemperature - 1 < innerTemperature <= outerTemperature) && windowPos != 'l')
             controlShutter(LOWER_END, LOW, HIGH);
 
     // Else handle temperature using the air-condition with the window closed.
@@ -122,8 +133,12 @@ void handleTemperature(void) {
         if (windowPos != 'l')
             controlShutter(LOWER_END, LOW, HIGH);
         
-        // Enable air-condition, and determine cooling or heating.
-        enableAircondition((innerTemperature > outerTemperature) ? true : false);
+        // Enable air-condition according the inner temperature.
+        if ((innerTemperature > HIGH_IN_TEMP_THRESHOLD) && !acIsEnabled)
+            enableAircondition(true);
+        else if ((innerTemperature < LOW_IN_TEMP_THRESHOLD) && !acIsEnabled)
+            enableAircondition(false);
+        
         // Do not allow window opening
         openWindowIsAllowed = false;
     }
