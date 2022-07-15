@@ -8,7 +8,7 @@ WiFiClient espClient;
 PubSubClient client(espClient);
 
 // State flags.
-uint8_t automatic = 0;
+bool mode = false;
 bool acIsEnabled = false;
 bool coolingIsEnabled = false;
 bool heatingIsEnabled = false;
@@ -256,7 +256,7 @@ void handleWaterTank(void) {
         toggleBuzzer(false);
 }
 
-// Setup WiFi
+// Setup WiFi.
 void setupWiFi(void) {
     #ifdef DEBUG
     Serial.print("Connecting to ");
@@ -281,7 +281,7 @@ void setupWiFi(void) {
 }
 
 // Reconnect to MQTT server.
-void reconnect() {
+void reconnect(void) {
     // Loop until we're reconnected
     while (!client.connected()) {
         #ifdef DEBUG
@@ -293,8 +293,10 @@ void reconnect() {
             Serial.println("connected");
             #endif
             // Subscribe
-            client.subscribe("esp32/out");
-            // client.subscribe("esp32/input");
+            client.subscribe(MODE);
+            client.subscribe(AC);
+            client.subscribe(IRR);
+            client.subscribe(SHTR);
         } else {
             #ifdef DEBUG
             Serial.print("failed, rc=");
@@ -307,40 +309,79 @@ void reconnect() {
     }
 }
 
+// Write byte to EEPROM specified address.
+void writeByteToEEPROM(uint16_t address, bool byte) {
+    EEPROM.write(address, byte);
+    EEPROM.commit();
+}
+
+#ifdef INITIALIZE_EEPROM
+// Initialize EEPROM to zero's
+void initializeEEPROM(void) {
+    for (uint16_t i = 0; i < EEPROM_SIZE; i++)
+        EEPROM.write(i, 0);
+    EEPROM.commit();
+}
+#endif
+
 // MQTT callback function.
-void callback(char* topic, byte* message, unsigned int length) {
+void executeMQTT(char* topic, byte* message, unsigned int length) {
     #ifdef DEBUG
     Serial.print("Message arrived on topic: ");
     Serial.print(topic);
     Serial.print(". Message: ");
+    #endif
 
-    for (int i = 0; i < length; i++)
+    // Get command string value.
+    String cmd;
+    for (int i = 0; i < length; i++) {
+        cmd += (char)message[i];
+        #ifdef DEBUG
         Serial.print((char)message[i]);
+        #endif
+    }
+    #ifdef DEBUG
     Serial.println();
     #endif
+
+    // Handle the message by topic.
+    if (String(topic) == MODE)
+        writeByteToEEPROM(MODE_ADDRESS, (cmd == "true") ? 1 : 0);
+    else if (String(topic) == AC)
+        ;
+    else if (String(topic) == IRR)
+        toggleIrrigation((cmd == "true") ? 1 : 0);
+    else if (String(topic) == SHTR)
+        ;
 }
 
 void setup() {
-    // Setup hardware and bluetooth serial
+    // Setup hardware and bluetooth serial.
     #ifdef DEBUG
     sghSerial.setupHardwareSerial();
     #endif
     sghSerial.setupBTSerial();
+
+    #ifdef INITIALIZE_EEPROM
+    initializeEEPROM();
+    #endif
   
-    // initialize EEPROM with predefined size
+    // initialize EEPROM with predefined size.
     EEPROM.begin(EEPROM_SIZE);
-    // Read the mode that the master works...
-    automatic = EEPROM.read(AUTOMATIC_ADDRESS);
+    // Read the mode that the master works.
+    mode = EEPROM.read(MODE_ADDRESS);
 
     setupWiFi();
     client.setServer(MQTT_SERVER, PORT);
-    client.setCallback(callback);
+    client.setCallback(executeMQTT);
 
-    // Set sleep timer
+    // Set sleep timer.
     // esp_sleep_enable_timer_wakeup(TIME_TO_SLEEP * uS_TO_S_FACTOR);
 
     #ifdef DEBUG
     Serial.println("Master MCU is ready!");
+    String startupMode = (mode) ? "automatic" : "manual";
+    Serial.println("Working in " + startupMode + " mode");
     #endif
 }
 
@@ -351,7 +392,7 @@ void loop() {
     client.loop();
 
     // If the automatic mode is on, handle the greenhouse according to the automation rules.
-    if (automatic) {
+    if (mode) {
         // handleTemperature();
         // handleLuminosity();
         // handleHumidity();

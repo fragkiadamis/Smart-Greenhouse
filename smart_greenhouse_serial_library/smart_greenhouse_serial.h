@@ -5,7 +5,7 @@
 #define SMART_GREENHOUSE_MCU_H
 
 // Serials
-#define DEBUG // Comment it out for production, serial prints waste memory...
+#define DEBUG // Comment it out for production, serial prints waste flash and dynamic memory...
 #define SERIAL_BUFFER_SIZE 16
 #define BAUD_RATE 115200
 #define BT_BAUD_RATE 38400
