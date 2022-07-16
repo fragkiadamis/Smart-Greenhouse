@@ -58,6 +58,12 @@ void toggleIrrigation(bool state) {
     // Read inner and outer temperature.
     cmd = String(sghSerial.IRG) + '|' + String(state);    // Create command,
     String res = sendCmdAndGetRes(cmd);                   // And send it.
+
+    String status = (state) ? "ON" : "OFF";
+    String msg = "Irrigation is " + status;
+    char msgOut[30];
+    msg.toCharArray(msgOut, 30);
+    client.publish(LOG, msgOut);
 }
 
 // Toggle buzzer.
@@ -112,6 +118,12 @@ void enableAircondition(bool cooling) {
         digitalWrite(AC_MOTOR_PIN2, LOW);
         acIsEnabled = true;
     }
+
+    String status = (cooling) ? "Cooling" : "Heating";
+    String msg = status + " is ON";
+    char msgOut[30];
+    msg.toCharArray(msgOut, 30);
+    client.publish(LOG, msgOut);
 }
 
 // Stop the aircondition.
@@ -125,6 +137,11 @@ void stopAircondition(void) {
     acIsEnabled = false;
     coolingIsEnabled = false;
     heatingIsEnabled = false;
+
+    String msg = "Temperature Control is OFF";
+    char msgOut[30];
+    msg.toCharArray(msgOut, 30);
+    client.publish(LOG, msgOut);
 }
 
 // Enable humidification / dehumidification process.
@@ -133,12 +150,23 @@ void enableHumidityControl(bool humidify) {
         digitalWrite(AC_HUMIDIFICATION, HIGH);
     else
         digitalWrite(AC_DEHUMIDIFICATION, HIGH);
+
+    String status = (humidify) ? "Humidifier" : "Dehumidifier";
+    String msg = status + " is ON";
+    char msgOut[30];
+    msg.toCharArray(msgOut, 30);
+    client.publish(LOG, msgOut);
 }
 
 // Stop humidification / dehumidification process.
 void stopHumidityControl(void) {
     digitalWrite(AC_HUMIDIFICATION, LOW);
     digitalWrite(AC_DEHUMIDIFICATION, LOW);
+
+    String msg = "Humidity Control is OFF";
+    char msgOut[30];
+    msg.toCharArray(msgOut, 30);
+    client.publish(LOG, msgOut);
 }
 
 // Check the temperature and handle it if needed.
@@ -147,6 +175,11 @@ void handleTemperature(void) {
     float innerTemperature = 0, outerTemperature = 0;
     // Get temperatures.
     requestTemperatures(&innerTemperature, &outerTemperature);
+    String msg = String(innerTemperature) + "|" + String(outerTemperature);
+    char msgOut[10];
+    msg.toCharArray(msgOut, 10);
+    client.publish(TEMP, msgOut);
+    
     #ifdef DEBUG
     Serial.println("Inner temperature ratio: " + String(innerTemperature));
     Serial.println("Outer temperature ratio: " + String(outerTemperature));
@@ -198,6 +231,11 @@ void handleLuminosity(void) {
     float luminosityRatio = 0;
     // Get luminosity ratio
     requestLuminosity(&luminosityRatio);
+
+    char msgOut[10];
+    dtostrf(luminosityRatio, 2, 2, msgOut);
+    client.publish(LUM_RATIO, msgOut);
+
     #ifdef DEBUG
     Serial.println("Luminosity ratio: " + String(luminosityRatio));
     #endif
@@ -230,8 +268,13 @@ void handleLuminosity(void) {
 // Check the humidity level and handle it if needed.
 void handleHumidity(void) {
     float humidity = 0;
+
     // Get humidity level
     requestHumidity(&humidity);
+    char msgOut[10];
+    dtostrf(humidity, 2, 2, msgOut);
+
+    client.publish(HUM, msgOut);
     #ifdef DEBUG
     Serial.println("Humidity: " + String(humidity));
     #endif
@@ -249,6 +292,11 @@ void handleWaterTank(void) {
     uint8_t reading = touchRead(WATER_TANK);
     float mls = 9.646 * pow(10, -6) * reading + 2.9110 * pow(10, -4);
     float percentage = (mls / (float)MAX_LEVEL) * 100.0;
+
+    // Convert to char array and send MQTT message to server.
+    char msgOut[10];
+    dtostrf(percentage, 2, 2, msgOut);
+    client.publish(WT, msgOut);
 
     if (percentage < WT_LOW_THRESHOLD)
         toggleBuzzer(true);
@@ -346,16 +394,21 @@ void executeMQTT(char* topic, byte* message, unsigned int length) {
     #endif
 
     // Handle the message by topic.
-    if (String(topic) == MODE)
+    if (String(topic) == MODE) {
+        mode = (cmd == "true") ? 1 : 0;
         writeByteToEEPROM(MODE_ADDRESS, (cmd == "true") ? 1 : 0);
+
+        String msg = (mode) ? "Set to automatic" : "Set to manual mode";
+        char msgOut[30];
+        msg.toCharArray(msgOut, 30);
+        client.publish(LOG, msgOut);
+    }
     else if (String(topic) == AC_TEMP) {
-        Serial.println("temptest");
         if (cmd == TEMP_OFF)
             stopAircondition();
         else
             enableAircondition((cmd == COOL_MODE) ? 1 : 0);
     } else if (String(topic) == AC_HUM) {
-        Serial.println("humtest");
         if (cmd == HUM_OFF)
             stopHumidityControl();
         else
@@ -419,12 +472,13 @@ void loop() {
 
     // If the automatic mode is on, handle the greenhouse according to the automation rules.
     if (mode) {
-        // handleTemperature();
-        // handleLuminosity();
-        // handleHumidity();
-        // handleWaterTank();
+        handleTemperature();
+        handleLuminosity();
+        handleHumidity();
+        handleWaterTank();
     }
-    
+
+    delay(1000);
     // Fall asleep
     // esp_light_sleep_start();
 }

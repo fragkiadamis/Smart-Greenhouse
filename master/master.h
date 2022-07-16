@@ -14,12 +14,10 @@
 // #define INITIALIZE_EEPROM // BE CAREFUL!!!! Uncomment this the first time that the MCU is running or when you want to reset the entirety of EEPROM to zero's.
 #define EEPROM_SIZE 512
 #define MODE_ADDRESS 0
-#define AC_MODE_COOLING_ADDRESS 1
-#define AC_HUMIDIFY_ADDRESS 2
 
 // Sleep
 #define uS_TO_S_FACTOR 1000000  // Conversion factor for micro seconds to seconds
-#define TIME_TO_SLEEP  5        // Time ESP32 will go to sleep (in seconds)
+#define TIME_TO_SLEEP  2        // Time ESP32 will go to sleep (in seconds)
 
 // LEDs
 #define AC_COOLING 22
@@ -66,8 +64,13 @@
 #define HUM_OFF "hum_ctrl_off"
 
 // MQTT Topics
+#define LOG "esp32/log"
 #define MODE "esp32/mode"
 #define AC_TEMP "esp32/ac_temp"
 #define AC_HUM "esp32/ac_hum"
 #define IRR "esp32/irrigation"
 #define SHTR "esp32/shutter"
+#define TEMP "esp32/temp"
+#define HUM "esp32/hum"
+#define LUM_RATIO "esp32/lum_ratio"
+#define WT "esp32/water_tank"
