@@ -1,0 +1,143 @@
+name,time,value
+log,1657974127545217083,Cooling is ON
+log,1657974136825243629,Temperature Control is OFF
+log,1657974146086309747,Heating is ON
+log,1657974155367881699,Temperature Control is OFF
+log,1657974164650157273,Humidity Control is OFF
+log,1657974201744099443,Cooling is ON
+log,1657974220265946441,Temperature Control is OFF
+log,1657974277901113554,Irrigation is ON
+log,1657974578856426679,Set to manual mode
+log,1657974581870164843,Set to automatic
+log,1657974619106980815,Irrigation is ON
+log,1657974620878163451,Irrigation is OFF
+log,1657974758921850942,Irrigation is ON
+log,1657974767923679315,Irrigation is OFF
+log,1657974772932506618,Set to manual mode
+log,1657974776980880649,Set to automatic
+log,1657974781989993582,Set to manual mode
+log,1657974832020399385,Irrigation is ON
+log,1657974839022102446,Irrigation is OFF
+log,1657974904054529322,Set to automatic
+log,1657974908064199934,Set to manual mode
+log,1657974966104362700,Set to automatic
+log,1657974968113831269,Set to manual mode
+log,1657974974125382592,Set to automatic
+log,1657974977172559600,Set to manual mode
+log,1657974979180749712,Set to automatic
+log,1657975033214655242,Set to manual mode
+log,1657975034222333226,Set to automatic
+log,1657975037232410643,Set to manual mode
+log,1657975039242757638,Set to automatic
+log,1657975068314949158,Set to manual mode
+log,1657975070322741027,Set to automatic
+log,1657975148362552543,Set to manual mode
+log,1657975149374101231,Set to automatic
+log,1657975285426512439,Set to manual mode
+log,1657975286431501505,Set to automatic
+log,1657975293441330821,Set to manual mode
+log,1657975302445077567,Heating is ON
+log,1657975305448780133,Cooling is ON
+log,1657975307452043678,Temperature Control is OFF
+log,1657975320523138056,Set to automatic
+log,1657975326530634348,Set to manual mode
+log,1657975355558803283,Set to automatic
+log,1657975362563361125,Heating is ON
+log,1657975365566723369,Cooling is ON
+log,1657975366573952823,Temperature Control is OFF
+log,1657975368579618985,Set to manual mode
+log,1657975523636762651,Set to automatic
+log,1657975554672966815,Set to manual mode
+log,1657975556680609696,Set to automatic
+log,1657975590753436443,Set to manual mode
+log,1657975730797818814,Set to automatic
+log,1657975813835201914,Set to manual mode
+log,1657975815843459521,Set to automatic
+log,1657975819853390784,Set to manual mode
+log,1657975864917273980,Set to automatic
+log,1657975865914703827,Set to manual mode
+log,1657975866964037160,Set to automatic
+log,1657975870972169202,Set to manual mode
+log,1657975893002372610,Set to automatic
+log,1657975895014052512,Set to manual mode
+log,1657975897023318602,Set to automatic
+log,1657975899033140581,Set to manual mode
+log,1657975902038763085,Cooling is ON
+log,1657975903042202233,Heating is ON
+log,1657975905045174489,Temperature Control is OFF
+log,1657975906051181610,Dehumidifier is ON
+log,1657975908049608302,Humidifier is ON
+log,1657975909058017593,Humidity Control is OFF
+log,1657975933082081200,Heating is ON
+log,1657975934082456961,Cooling is ON
+log,1657975935084108163,Temperature Control is OFF
+log,1657975938085527902,Heating is ON
+log,1657975979139537198,Temperature Control is OFF
+log,1657976123189439288,Set to automatic
+log,1657976124238686062,Set to manual mode
+log,1657976126248397364,Set to automatic
+log,1657976129258334393,Set to manual mode
+log,1657976131268352483,Set to automatic
+log,1657976198307826420,Set to manual mode
+log,1657976201317827125,Set to automatic
+log,1657976223344454171,Heating is ON
+log,1657976224349036914,Cooling is ON
+log,1657976225353913088,Temperature Control is OFF
+log,1657976226357348630,Heating is ON
+log,1657976227358990068,Temperature Control is OFF
+log,1657976228361989414,Cooling is ON
+log,1657976395426388582,Set to manual mode
+log,1657976396478250446,Set to automatic
+log,1657976532527074104,Set to manual mode
+log,1657976533536917118,Set to automatic
+log,1657976535546799273,Set to manual mode
+log,1657976538557833867,Set to automatic
+log,1657976560594366801,Set to manual mode
+log,1657976562637695346,Set to automatic
+log,1657976589670604767,Set to manual mode
+log,1657976591680155665,Set to automatic
+log,1657976632710445750,Temperature Control is OFF
+log,1657976633714820795,Heating is ON
+log,1657976653739863805,Temperature Control is OFF
+log,1657976654744250706,Cooling is ON
+log,1657976655743541830,Heating is ON
+log,1657976656746393236,Temperature Control is OFF
+log,1657976669769668615,Heating is ON
+log,1657976670771432653,Temperature Control is OFF
+log,1657976671774089152,Cooling is ON
+log,1657976672777287050,Temperature Control is OFF
+log,1657976673780635479,Heating is ON
+log,1657976713808251728,Temperature Control is OFF
+log,1657976714811315774,Cooling is ON
+log,1657976715814271436,Temperature Control is OFF
+log,1657976716818821116,Heating is ON
+log,1657976717820319453,Temperature Control is OFF
+log,1657976718822789345,Cooling is ON
+log,1657976827873881122,Set to manual mode
+log,1657976829882766270,Set to automatic
+log,1657976842887651607,Temperature Control is OFF
+log,1657976843889612006,Heating is ON
+log,1657976845895952646,Temperature Control is OFF
+log,1657976846896776553,Cooling is ON
+log,1657976978958862421,Set to manual mode
+log,1657976980970521776,Set to automatic
+log,1657977004041433005,Set to manual mode
+log,1657977005049900415,Set to automatic
+log,1657977007054146022,Irrigation is ON
+log,1657977009059480569,Irrigation is OFF
+log,1657977071169778909,Set to manual mode
+log,1657977072175945202,Set to automatic
+log,1657977073186254345,Set to manual mode
+log,1657977075187812746,Irrigation is ON
+log,1657977077190159100,Irrigation is OFF
+log,1657977078200136456,Set to automatic
+log,1657977079210399913,Set to manual mode
+log,1657985159369158652,Irrigation is ON
+log,1657985163363292643,Irrigation is OFF
+log,1657986038608558749,Set to automatic
+log,1657986043614407925,Set to manual mode
+log,1657986056646828643,Set to automatic
+log,1657986058657333483,Set to manual mode
+log,1657986307804851811,Set to automatic
+log,1657986308815511509,Set to manual mode
+log,1657987732994408768,Set to automatic
