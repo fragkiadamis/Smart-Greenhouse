@@ -1,8 +1,8 @@
 // BluetoothCom.h
 #include "Arduino.h"
 
-#ifndef SMART_GREENHOUSE_MCU_H
-#define SMART_GREENHOUSE_MCU_H
+#ifndef SMART_GREENHOUSE_SERIAL_H
+#define SMART_GREENHOUSE_SERIAL_H
 
 // Serials
 #define DEBUG // Comment it out for production, serial prints waste flash and dynamic memory...

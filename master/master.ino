@@ -294,7 +294,8 @@ void reconnect(void) {
             #endif
             // Subscribe
             client.subscribe(MODE);
-            client.subscribe(AC);
+            client.subscribe(AC_TEMP);
+            client.subscribe(AC_HUM);
             client.subscribe(IRR);
             client.subscribe(SHTR);
         } else {
@@ -347,12 +348,37 @@ void executeMQTT(char* topic, byte* message, unsigned int length) {
     // Handle the message by topic.
     if (String(topic) == MODE)
         writeByteToEEPROM(MODE_ADDRESS, (cmd == "true") ? 1 : 0);
-    else if (String(topic) == AC)
-        ;
-    else if (String(topic) == IRR)
+    else if (String(topic) == AC_TEMP) {
+        Serial.println("temptest");
+        if (cmd == TEMP_OFF)
+            stopAircondition();
+        else
+            enableAircondition((cmd == COOL_MODE) ? 1 : 0);
+    } else if (String(topic) == AC_HUM) {
+        Serial.println("humtest");
+        if (cmd == HUM_OFF)
+            stopHumidityControl();
+        else
+            enableHumidityControl((cmd == HUM_MODE) ? 1 : 0);
+    } else if (String(topic) == IRR)
         toggleIrrigation((cmd == "true") ? 1 : 0);
-    else if (String(topic) == SHTR)
-        ;
+    else if (String(topic) == SHTR) {
+        // Initialze window position and determine window position.
+        char windowPos = determineWindowPosition();
+        // If window is already in the desired position, do nothing.
+        if ((cmd == "close" && windowPos == 'l') || (cmd == "mid" && windowPos == 'm')  || (cmd == "open" && windowPos == 'u'))
+            return;
+        
+        if (cmd == "close")
+            controlShutter(LOWER_END, LOW, HIGH);
+        else if (cmd == "mid")
+            if (windowPos == 'u')
+                controlShutter(MIDDLE, LOW, HIGH);
+            else if (windowPos == 'l')
+                controlShutter(MIDDLE, HIGH, LOW);
+        else if (cmd == "open")
+            controlShutter(UPPER_END, HIGH, LOW);
+    }
 }
 
 void setup() {

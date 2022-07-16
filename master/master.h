@@ -58,8 +58,16 @@
 #define AC_HUMIDIFICATION 34
 #define AC_DEHUMIDIFICATION 35
 
+#define COOL_MODE "cool"
+#define HEAT_MODE "heat"
+#define TEMP_OFF "temp_ctrl_off"
+#define HUM_MODE "hum"
+#define DEHUM_MODE "dehum"
+#define HUM_OFF "hum_ctrl_off"
+
 // MQTT Topics
 #define MODE "esp32/mode"
-#define AC "esp32/ac"
+#define AC_TEMP "esp32/ac_temp"
+#define AC_HUM "esp32/ac_hum"
 #define IRR "esp32/irrigation"
 #define SHTR "esp32/shutter"

@@ -16,11 +16,14 @@ void mcu_sleep(void) {
 }
 
 // Toggle buzzer (turn ON or OFF)
-void toggleBuzzer(bool turnOn) {
-  if (turnOn)
-    return tone(BUZZER_PIN, BUZZER_FREQ);
+bool toggleBuzzer(bool turnOn) {
+  if (turnOn) {
+    tone(BUZZER_PIN, BUZZER_FREQ);
+    return 1;
+  }
 
   noTone(BUZZER_PIN);
+  return 0;
 }
 
 // Read DHT sensor humidity
@@ -39,11 +42,14 @@ float readDHTSensor(uint8_t sensor) {
 }
 
 // Toggle Irrigation (turn ON or OFF)
-void toggleIrrigation(uint8_t turnOn) {
-  if (turnOn)
-    return irrigationValve.write(180);
+bool toggleIrrigation(uint8_t turnOn) {
+  if (turnOn) {
+    irrigationValve.write(180);
+    return 1;
+  }
   
   irrigationValve.write(0);
+  return 0;
 }
 
 // Read the outside temperature from LM35 sensor
@@ -71,14 +77,16 @@ void executeCommand(String cmd) {
   if (splitIndex)
     value = (cmd.substring(splitIndex + 1, cmd.length())).toInt();
 
-  if (action == sghSerial.BZ)
-    return toggleBuzzer(value);
-  else if (action == sghSerial.DHT_SENS) {
+  if (action == sghSerial.BZ) {
+    bool res = toggleBuzzer(value);
+    sghSerial.send(String(res));
+  } else if (action == sghSerial.DHT_SENS) {
     float sensorValue = readDHTSensor(value);
     sghSerial.send(String(sensorValue));
-  } else if (action == sghSerial.IRG)
-    return toggleIrrigation(value);
-  else if (action == sghSerial.OUTER_TEMP) {
+  } else if (action == sghSerial.IRG) {
+    bool res = toggleIrrigation(value);
+    sghSerial.send(String(res));
+  } else if (action == sghSerial.OUTER_TEMP) {
     float temperature = readLM35Sensor();
     sghSerial.send(String(temperature));
   } else if (action == sghSerial.LUM) {
@@ -88,6 +96,7 @@ void executeCommand(String cmd) {
     #ifdef DEBUG
     Serial.println(F("Undefined command"));
     #endif
+    sghSerial.send(String(-1));
   }
 }
 
